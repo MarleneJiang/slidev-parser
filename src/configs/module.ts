@@ -1,14 +1,14 @@
 import * as vueModule from 'vue'
 
 const layoutsRaw = [
-  (import.meta as any).glob('./layouts/*.vue', { eager: true }),
+  (import.meta as any).glob('../layouts/*.vue', { eager: true }),
 // import.meta.glob('../node_modules/@slidev/theme-default/layouts/*.vue', { eager: true }),
 ] as any[]
 
 function loadModuleConfig() {
   const moduleLoaders: Record<string, () => Promise<any>> = Object.create(null)
   moduleLoaders.vue = async () => vueModule
-  moduleLoaders['@slidev/client/context.ts'] = async () => import('@slidev/client/context') // 用于处理formatter 转成 props
+  // moduleLoaders['@slidev/client/context.ts'] = async () => import('@slidev/client/context') // 用于处理formatter 转成 props
 
   const layouts: Record<string, any> = {}
 

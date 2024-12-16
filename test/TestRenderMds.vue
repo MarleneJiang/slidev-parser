@@ -1,28 +1,31 @@
 <script setup>
-// import { renderMds } from '../dist/index'
+import { onMounted, ref, shallowRef } from 'vue'
+import { renderMds } from '../dist/index'
 
-// const slidesSource = [
-//   {
-//     frontmatter: {
-//     },
-//     content: `# Hello\n\nThis is a slide{.mt-5}\n\nCompiled in the **browser**\n::card
-//   The content of the card{style="color: green;" .custom-class .green}!
-//   ::\n<test/>`,
-//     note: '',
-//   },
-// ]
-// const comp = ref()
-// onMounted(() => {
-//   const slides = renderMds(slidesSource)
-//   comp.value = slides[0]
-// })
+const slidesSource = [
+  {
+    frontmatter: {
+      layout: 'cover',
+    },
+    content: `# Hello\n\nThis is a slide{.mt-5}\n\nCompiled in the **browser**\n::card
+  The content of the card{style="color: green;" .custom-class .green}!
+  ::\n<test/>`,
+    note: '',
+  },
+]
+const comp = shallowRef()
+const css = ref()
+onMounted(async () => {
+  const slides = renderMds(slidesSource)
+  css.value = (await slides[0].css()).output.getLayer()
+  comp.value = await slides[0]
+})
 </script>
 
 <template>
-  <div>
-    1231231
-    {{ comp }}
-    <!-- <component :is="slide.component" /> -->
+  <div v-if="comp">
+    {{ css }}
+    <component :is="comp.component" />
   </div>
 </template>
 

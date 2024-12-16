@@ -22,7 +22,7 @@ export default defineConfig({
       fileName: 'index',
     },
     rollupOptions: {
-      external: ['unplugin-vue-markdown', ...Object.keys(dependencies)],
+      external: [...Object.keys(dependencies)],
     },
   },
 })

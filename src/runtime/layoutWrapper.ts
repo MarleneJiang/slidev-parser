@@ -1,5 +1,3 @@
-import type { ResolvedSlidevOptions } from '@slidev/types'
-import type { Plugin } from 'vite'
 import { ensurePrefix, slash } from '@antfu/utils'
 import { bold, gray, red, yellow } from 'kolorist'
 import { regexSlideSourceId, templateImportContextUtils, templateInitContext, templateInjectionMarker } from '../configs/common'
@@ -9,18 +7,18 @@ export function toAtFS(path: string) {
 }
 
 export function createLayoutWrapperPlugin(
-  { data, utils }: ResolvedSlidevOptions,
-): Plugin {
+  { data, utils }: any,
+) {
   return {
     name: 'slidev:layout-wrapper',
-    transform(code, id) {
+    transform(code: string, id: string) {
       const match = id.match(regexSlideSourceId)
       if (!match)
         return
       const [, no, type] = match
       if (type !== 'md')
         return
-      const index = +no - 1
+      const index = +no
       const layouts = utils.getLayouts()
       const rawLayoutName = data.slides[index]?.frontmatter?.layout ?? data.slides[0]?.frontmatter?.default?.layout
       const frontmatter = data.slides[index]?.frontmatter ?? data.slides[0]?.frontmatter?.default
@@ -45,7 +43,6 @@ export function createLayoutWrapperPlugin(
       let body = code.slice(bodyStart, bodyEnd).trim()
       if (body.startsWith('<div>') && body.endsWith('</div>'))
         body = body.slice(5, -6)
-
       return [
         templatePart.slice(0, bodyStart),
         `<InjectedLayout v-bind="$frontmatter">\n${body}\n</InjectedLayout>`,
