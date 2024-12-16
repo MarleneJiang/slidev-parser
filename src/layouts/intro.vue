@@ -3,6 +3,7 @@
     <slot />
   </div>
 </template>
+
 <style>
 .slidev-layout.intro {
   @apply h-full grid;

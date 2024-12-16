@@ -19,6 +19,10 @@
     ".": {
       "import": "./dist/index.es.js",
       "require": "./dist/index.cjs.js"
+    },
+    "./index.css": {
+      "import": "./dist/index.css",
+      "require": "./dist/index.css"
     }
   },
   "main": "./dist/index.cjs.js",
@@ -85,7 +89,6 @@
     "lint-staged": "^15.2.10",
     "pnpm": "^9.14.3",
     "simple-git-hooks": "^2.11.1",
-    "terser": "^5.37.0",
     "typescript": "^5.7.2",
     "vite": "^6.0.1",
     "vitest": "^2.1.6"

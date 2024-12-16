@@ -1,6 +1,6 @@
 import { ensurePrefix, slash } from '@antfu/utils'
 import { bold, gray, red, yellow } from 'kolorist'
-import { regexSlideSourceId, templateImportContextUtils, templateInitContext, templateInjectionMarker } from '../configs/common'
+import { regexSlideSourceId } from '../configs/common'
 
 export function toAtFS(path: string) {
   return `/@fs${ensurePrefix('/', slash(path))}`
