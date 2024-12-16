@@ -23,7 +23,9 @@ export function createLayoutWrapperPlugin(
       const index = +no - 1
       const layouts = utils.getLayouts()
       const rawLayoutName = data.slides[index]?.frontmatter?.layout ?? data.slides[0]?.frontmatter?.default?.layout
-      let layoutName = rawLayoutName || (index === 0 ? 'cover' : 'default')
+      const frontmatter = data.slides[index]?.frontmatter ?? data.slides[0]?.frontmatter?.default
+      const importFormatterCode = `const $frontmatter = ${JSON.stringify(frontmatter)}`
+      let layoutName = rawLayoutName || 'default'
       if (!layouts[layoutName]) {
         console.error(red(`\nUnknown layout "${bold(layoutName)}".${yellow(' Available layouts are:')}`)
           + Object.keys(layouts).map((i, idx) => (idx % 3 === 0 ? '\n    ' : '') + gray(i.padEnd(15, ' '))).join('  '))
@@ -46,14 +48,15 @@ export function createLayoutWrapperPlugin(
 
       return [
         templatePart.slice(0, bodyStart),
-        `<InjectedLayout v-bind="_frontmatterToProps($frontmatter,${index})">\n${body}\n</InjectedLayout>`,
+        `<InjectedLayout v-bind="$frontmatter">\n${body}\n</InjectedLayout>`,
         templatePart.slice(bodyEnd),
         scriptPart.slice(0, setupTag[0].length),
         `import InjectedLayout from "${toAtFS(layouts[layoutName])}"`,
-        templateImportContextUtils,
-        templateInitContext,
-        '$clicksContext.setup()',
-        templateInjectionMarker,
+        importFormatterCode,
+        // templateImportContextUtils,
+        // templateInitContext,
+        // '$clicksContext.setup()',
+        // templateInjectionMarker,
         scriptPart.slice(setupTag[0].length),
       ].join('\n')
     },

@@ -17,13 +17,12 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
     }
   },
-  "main": "./dist/index.mjs",
-  "module": "./dist/index.mjs",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "typesVersions": {
     "*": {
@@ -63,7 +62,6 @@
     "@unocss/transformer-compile-class": "^0.65.1",
     "@unocss/transformer-directives": "^0.65.1",
     "@unocss/transformer-variant-group": "^0.65.1",
-    "@vitejs/plugin-vue": "^5.2.1",
     "@vue/babel-plugin-jsx": "^1.2.5",
     "@vueuse/core": "^12.0.0",
     "kolorist": "^1.8.0",
@@ -77,6 +75,7 @@
     "pathe": "^1.1.2",
     "sucrase": "^3.35.0",
     "unocss": "^0.65.1",
+    "unplugin-vue-markdown": "^0.27.1",
     "vue": "^3.5.13"
   },
   "devDependencies": {
@@ -87,6 +86,7 @@
     "@types/babel__standalone": "^7.1.9",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^22.10.1",
+    "@vitejs/plugin-vue": "^5.2.1",
     "bumpp": "^9.8.1",
     "eslint": "^9.15.0",
     "lint-staged": "^15.2.10",
@@ -94,7 +94,6 @@
     "simple-git-hooks": "^2.11.1",
     "typescript": "^5.7.2",
     "unplugin": "^2.1.0",
-    "unplugin-vue-markdown": "^0.27.1",
     "vite": "^6.0.1",
     "vitest": "^2.1.6"
   }
