@@ -7,9 +7,16 @@
     "resolveJsonModule": true,
     "strict": true,
     "strictNullChecks": true,
-    "noEmit": true,
+    "declaration": true,
+    "declarationDir": "./dist",
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "outDir": "./dist",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "skipDefaultLibCheck": true
-  }
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true // 跳过库文件的类型检查
+  },
+  "include": ["src/**/*.ts", "shims-vue.d.ts"],
+  "exclude": ["node_modules", "dist"] // 排除 node_modules 和 dist 目录
 }

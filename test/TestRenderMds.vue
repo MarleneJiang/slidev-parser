@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref, shallowRef } from 'vue'
-import { renderMds } from '../dist/index'
+import { renderMds } from '../src/index'
 
 const slidesSource = [
   {
