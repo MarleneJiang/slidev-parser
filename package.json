@@ -1,7 +1,7 @@
 {
   "name": "slidev-parser",
   "type": "module",
-  "version": "0.0.1-beta.2",
+  "version": "0.1.0",
   "packageManager": "pnpm@9.14.3",
   "description": "slidev-parser",
   "author": "Marlene Jiang <jiangmaling@qq.com>",
@@ -17,13 +17,12 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.js",
-      "browser": "./dist/index.umd.cjs"
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.cjs.js"
     }
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
+  "main": "./dist/index.cjs.js",
+  "module": "./dist/index.es.js",
   "types": "./dist/index.d.ts",
   "typesVersions": {
     "*": {
@@ -37,7 +36,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && tsc --emitDeclarationOnly",
     "dev": "vite serve ./",
     "lint": "eslint .",
     "prepublishOnly": "nr build",
@@ -86,6 +85,7 @@
     "lint-staged": "^15.2.10",
     "pnpm": "^9.14.3",
     "simple-git-hooks": "^2.11.1",
+    "terser": "^5.37.0",
     "typescript": "^5.7.2",
     "vite": "^6.0.1",
     "vitest": "^2.1.6"
