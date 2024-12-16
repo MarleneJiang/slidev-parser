@@ -24,6 +24,7 @@ The slidev parser for web env.
 <a href="https://stackblitz.com/edit/vitejs-vite-hbatbgm5?file=src%2FApp.vue">🤹‍♂️ Playground</a>
 </p>
 <br>
+
 # ✨ Features
 
 - 🎨 Full [UnoCSS](https://unocss.dev/) support for styling
