@@ -27,7 +27,7 @@ The slidev parser for web env.
 
 # ✨ Features
 
-- 🎨 Full [UnoCSS](https://unocss.dev/) support for styling
+- 🎨 [UnoCSS](https://unocss.dev/) support for styling
 - 📝 [MDC (Markdown Components)](https://content.nuxtjs.org/guide/writing/mdc) syntax support
 - 📐 Built-in preset layout formatters
 - 📦 Compiled in the browser
@@ -80,7 +80,7 @@ function updateDynamicCss(css) {
 onMounted(async () => {
   const slides = renderMds(slidesSource)
   css.value = (await slides[0].css()).output.css
-  comp.value = await slides[0]
+  comp.value = slides[0]
   updateDynamicCss(css.value)
 })
 </script>

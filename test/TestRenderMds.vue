@@ -30,7 +30,7 @@ function updateDynamicCss(css) {
 onMounted(async () => {
   const slides = renderMds(slidesSource)
   css.value = (await slides[0].css()).output.css
-  comp.value = await slides[0]
+  comp.value = slides[0]
   updateDynamicCss(css.value)
 })
 </script>
