@@ -18,7 +18,8 @@
   "exports": {
     ".": {
       "import": "./dist/index.js",
-      "require": "./dist/index.js"
+      "require": "./dist/index.js",
+      "browser": "./dist/index.umd.cjs"
     }
   },
   "main": "./dist/index.js",
