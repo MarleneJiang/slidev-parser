@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { generateUnoCss } from '../src/compiler/uno'
-import { renderMds } from '../src/index'
+import { SlideRenderer } from '../src/index'
 
 describe('slide compiler css', async () => {
   const slidesSource = [
@@ -13,7 +13,8 @@ describe('slide compiler css', async () => {
       note: '',
     },
   ]
-  const slides = renderMds(slidesSource)
+  const renderer = new SlideRenderer()
+  const slides = await renderer.render(slidesSource)
   const slide = slides[0]
   it('exported', async () => {
     expect((await slide.css()).output?.css).toEqual(`/* layer: preflights */

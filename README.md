@@ -25,75 +25,125 @@ The slidev parser for web env.
 </p>
 <br>
 
-# ✨ Features
+# 功能特点 ✨
 
-- 🎨 [UnoCSS](https://unocss.dev/) support for styling
-- 📝 [MDC (Markdown Components)](https://content.nuxtjs.org/guide/writing/mdc) syntax support
-- 📐 Built-in preset layout formatters
-- 📦 Compiled in the browser
+- 📝 支持 [MDC (Markdown Components)](https://content.nuxtjs.org/guide/writing/mdc) 语法
+  - 可以在 Markdown 中直接使用 Vue 组件
+  - 支持属性修饰符(例如 `{.text-blue}`）
+  - 支持嵌套语法和快捷方式
 
-# 📦 Installation
+- 🎨 完整的 [UnoCSS](https://unocss.dev/) 样式支持
+  - 原子化 CSS 工具类
+  - 支持动态类名
+  - 支持预设图标
+  - 支持自定义规则和主题
+
+- 📐 内置布局模板
+  - default - 默认布局
+  - center - 居中布局
+  - cover - 封面布局
+  - two-cols - 两列布局
+  - image-right/left - 图文布局
+  - iframe - 内嵌框架布局
+
+- 🔥 高级特性
+  - 浏览器端实时渲染
+  - 响应式设计
+  - 支持缩放
+  - 主题定制
+
+# 安装 📦
 
 ```bash
-# Using npm
+# 使用 npm
 npm install slidev-parser
 
-# Using yarn
+# 使用 yarn
 yarn add slidev-parser
 
-# Using pnpm
+# 使用 pnpm
 pnpm add slidev-parser
+
 ```
 
-# Usage
+# 使用指南 📖
+
+## 基础使用
 
 ```vue
 <script setup>
-import { renderMds } from 'slidev-parser'
-import { onMounted, ref, shallowRef } from 'vue'
+import { SlideRender } from 'slidev-parser'
+import 'slidev-parser/index.css'
 
-const slidesSource = [
-  {
-    frontmatter: {
-      layout: 'default',
-    },
-    content: `# slidev-parser{.text-blue-500}\n\nSupport \`MDC\`{.font-bold .text-xl},\`UnoCSS\`{.font-bold .text-xl} Syntax.{.mt-5}\n\nCompiled in the **browser**\n\n<div i-logos-vue inline-block text-4xl mr-4/><div i-logos-unocss inline-block text-4xl mr-4/><div i-logos-chrome inline-block text-4xl/>`,
-    note: '',
+const slide = {
+  frontmatter: {
+    layout: 'cover', // 使用封面布局
   },
-]
+  content: `
+# 我的演示文稿 {.text-blue-500}
 
-const comp = shallowRef()
-const css = ref()
-function updateDynamicCss(css) {
-  // 创建一个 <style> 标签来插入 CSS
-  let style = document.getElementById('dynamic-style')
-  if (!style) {
-    style = document.createElement('style')
-    style.id = 'dynamic-style'
-    style.type = 'text/css' // 设置 type 为 'text/css'
-    document.head.appendChild(style)
-  }
-
-  // 设置新的 CSS 内容
-  style.innerHTML = css
+使用 **Markdown** 编写内容
+  `,
+  note: '这是演讲者注释'
 }
-onMounted(async () => {
-  const slides = renderMds(slidesSource)
-  css.value = (await slides[0].css()).output.css
-  comp.value = slides[0]
-  updateDynamicCss(css.value)
-})
 </script>
 
 <template>
-  <div v-if="comp">
-    <component :is="comp.component" />
-  </div>
+  <SlideRender
+    id="my-slide"
+    :slide="slide"
+    :zoom="1"
+    :slide-aspect="16 / 9"
+  />
 </template>
-
-<style></style>
 ```
 
-# License
+## 多页面切换
 
-[MIT](https://github.com/MarleneJiang/slidev-parser/blob/main/LICENSE.md)
+```vue
+<script setup>
+import { SlidesRender } from 'slidev-parser'
+import 'slidev-parser/index.css'
+
+const slides = [
+  {
+    frontmatter: { layout: 'cover' },
+    content: '# 第一页',
+  },
+  {
+    frontmatter: { layout: 'two-cols' },
+    content: `
+# 左侧内容
+::right::
+# 右侧内容
+    `,
+  }
+]
+</script>
+
+<template>
+  <SlidesRender :slides="slides" />
+</template>
+```
+
+## 配置选项
+
+```ts
+interface RendererOptions {
+  // Markdown 解析器选项
+  mdOptions?: Record<string, any>
+
+  // Vue SFC 编译选项
+  sfcOptions?: Record<string, any>
+
+  // UnoCSS 配置
+  unoConfig?: {
+    customConfigRaw?: string
+    customCSSLayerName?: string
+  }
+
+  // 自定义加载和错误组件
+  SlideLoading?: Component
+  SlideError?: Component
+}
+```

@@ -1,5 +1,6 @@
 import type { SlideInfo } from '@slidev/types'
 import type { CompileResult } from '../types'
+import type { UnoGenerator } from './uno'
 import MarkdownIt from 'markdown-it'
 // @ts-expect-error missing types
 import MarkdownItFootnote from 'markdown-it-footnote'
@@ -17,6 +18,7 @@ interface CompileOptions {
   code: string
   mdOptions?: Record<string, any>
   sfcOptions?: Record<string, any>
+  unoGenerator?: UnoGenerator
 }
 
 const mdParser = new MarkdownIt({ quotes: '""\'\'', html: true, xhtmlOut: true, linkify: true })
@@ -30,10 +32,16 @@ function parseMd(code: string) {
 }
 
 export async function compileCss(options: CompileOptions) {
-  const { code } = options
+  const { code, unoGenerator } = options
   const vueSFC = parseMd(code) // 转换成sfc代码，不包含style
-  const unocss = await generateUnoCss({ inputHtml: extractTemplateBody(vueSFC) })
-  return unocss
+  if (!unoGenerator) {
+    const unocss = await generateUnoCss({ inputHtml: extractTemplateBody(vueSFC) })
+    return unocss
+  }
+  else {
+    const unocss = await unoGenerator.generate({ inputHtml: extractTemplateBody(vueSFC) })
+    return unocss
+  }
 }
 
 function createlayoutWrapperTransform(slidesInfo: SlideInfo[], layouts: Record<string, any>) {

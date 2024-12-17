@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "DOM", "DOM.Iterable"], // 添加 DOM 相关类型定义
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "resolveJsonModule": true,
@@ -15,8 +15,8 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipDefaultLibCheck": true,
-    "skipLibCheck": true // 跳过库文件的类型检查
+    "skipLibCheck": true
   },
   "include": ["src/**/*.ts", "shims-vue.d.ts"],
-  "exclude": ["node_modules", "dist"] // 排除 node_modules 和 dist 目录
+  "exclude": ["node_modules", "dist"]
 }

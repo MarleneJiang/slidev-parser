@@ -15,14 +15,15 @@ export default defineConfig({
       entry: resolve(__dirname, './src/index.ts'),
       name: 'slidev-parser',
       fileName: format => `index.${format}.js`,
-      formats: ['es', 'cjs', 'umd'],
+      formats: ['es', 'cjs', 'umd'], // 支持多种模块格式
     },
     rollupOptions: {
-      external: [...Object.keys(dependencies)],
+      external: [...Object.keys(dependencies), 'vue'],
       output: {
         globals: {
           'magic-string': 'MagicString',
           'unocss': 'UnoCSS',
+          '@unocss/autocomplete': 'unocssAutocomplete',
           'ofetch': 'ofetch',
           'markdown-it': 'MarkdownIt',
           'markdown-it-footnote': 'markdownItFootnote',
@@ -35,7 +36,9 @@ export default defineConfig({
           '@babel/standalone': 'Babel',
           '@vue/babel-plugin-jsx': 'vueJsx',
           'vue': 'Vue',
+          '@vueuse/core': 'VueUse',
         },
+        // 确保 CSS 文件正确输出
         assetFileNames: (assetInfo) => {
           if (assetInfo.name === 'style.css')
             return 'index.css'
@@ -43,7 +46,7 @@ export default defineConfig({
         },
       },
     },
-    cssCodeSplit: true,
-    cssMinify: true,
+    cssCodeSplit: true, // 启用 CSS 代码分割
+    cssMinify: true, // CSS 压缩
   },
 })
