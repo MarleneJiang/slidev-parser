@@ -37,6 +37,7 @@ export default defineConfig({
           '@vue/babel-plugin-jsx': 'vueJsx',
           'vue': 'Vue',
           '@vueuse/core': 'VueUse',
+          '@slidev/parser': 'SlidevParser',
         },
         // 确保 CSS 文件正确输出
         assetFileNames: (assetInfo) => {

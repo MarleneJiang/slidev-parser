@@ -1,6 +1,7 @@
 import type { SlideInfo, SlideRoute, SourceSlideInfo } from '@slidev/types'
 import type { Component } from 'vue'
 import type { GenerateOutput } from './compiler/uno'
+import { parseSync } from '@slidev/parser'
 import { defineAsyncComponent } from 'vue'
 import { compileCss, compileMd } from './compiler/md'
 import { renderNote } from './compiler/note'
@@ -134,6 +135,16 @@ export class SlideRenderer {
           unoGenerator: this.unoGenerator,
         }),
       } satisfies Islide
+    })
+  }
+
+  parse(code: string) {
+    return parseSync(code, '').slides.map((slide: any) => {
+      return {
+        frontmatter: slide.frontmatter,
+        content: slide.content,
+        note: slide.notes,
+      }
     })
   }
 }

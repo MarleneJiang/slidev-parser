@@ -13,7 +13,7 @@ const props = defineProps({
     default: 'slide',
   },
   slides: {
-    type: Array as PropType<SlideSource[]>,
+    type: Array as PropType<SlideSource[] | string>,
     required: true,
   },
   slideAspect: {
@@ -154,17 +154,49 @@ function handleSlideUpdates(newSlides: SlideSource[], oldSlides: SlideSource[]) 
   return Promise.all(updates)
 }
 
+function handleUpdateSlides(newSlides: string | SlideSource[], oldSlides: string | SlideSource[]) {
+  !slideRenderer.value && (slideRenderer.value = new SlideRenderer(props.rendererOptions))
+  if (typeof newSlides !== typeof oldSlides) {
+    console.error('Slides数据类型不一致', newSlides, oldSlides)
+    Array.from({ length: (slideStates.value.length) }).forEach((_, index) => {
+      slideStates.value[index].status = SlideStatus.Error
+    })
+  }
+  else if (typeof newSlides === 'string' && typeof oldSlides === 'string') {
+    const newSlideArray = slideRenderer.value?.parse(newSlides)
+    const oldSlideArray = slideRenderer.value?.parse(oldSlides)
+    if (newSlideArray && newSlideArray.length > 0 && oldSlideArray && oldSlideArray.length > 0) {
+      handleSlideUpdates(newSlideArray, oldSlideArray)
+    }
+    else {
+      console.error('无法解析Slides文本', newSlideArray, oldSlideArray)
+      Array.from({ length: (slideStates.value.length) }).forEach((_, index) => {
+        slideStates.value[index].status = SlideStatus.Error
+      })
+    }
+  }
+  else if (Array.isArray(newSlides) && Array.isArray(oldSlides)) {
+    handleSlideUpdates(newSlides, oldSlides)
+  }
+  else {
+    console.error('Slides数据类型不一致', typeof newSlides, typeof oldSlides)
+    Array.from({ length: (slideStates.value.length) }).forEach((_, index) => {
+      slideStates.value[index].status = SlideStatus.Error
+    })
+  }
+}
+
 onMounted(() => {
   // 组件挂载时直接更新Slides
   slideRenderer.value = new SlideRenderer(props.rendererOptions)
-  handleSlideUpdates(props.slides, []) // 初次加载时, 旧数组为空
+  handleUpdateSlides(props.slides, []) // 初次加载时, 旧数组为空
 })
 
 watch(
   () => props.slides,
   (newSlides, oldSlides) => {
     // 对比新旧 slides 数据，只更新发生变化的Slides
-    handleSlideUpdates(newSlides, oldSlides)
+    handleUpdateSlides(newSlides, oldSlides)
   },
   { deep: true }, // 深度监听每个Slides的属性变化
 )

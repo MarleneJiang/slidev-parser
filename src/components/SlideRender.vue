@@ -13,7 +13,7 @@ const props = defineProps({
     required: true,
   },
   slide: {
-    type: Object as PropType<SlideSource>,
+    type: Object as PropType<SlideSource | string>,
     required: true,
   },
   slideAspect: {
@@ -125,11 +125,28 @@ async function updateSlide(slide: SlideSource) {
     status.value = SlideStatus.Error
   }
 }
+
+function handleUpdateSlide() {
+  !slideRenderer.value && (slideRenderer.value = new SlideRenderer(props.rendererOptions))
+  if (typeof props.slide === 'string') {
+    const slideArray = slideRenderer.value?.parse(props.slide)
+    if (slideArray && slideArray.length > 0) {
+      updateSlide(slideArray[0])
+    }
+    else {
+      console.error('无法解析Slides文本', slideArray)
+      status.value = SlideStatus.Error
+    }
+  }
+  else {
+    updateSlide(props.slide)
+  }
+}
 onMounted(() => {
   slideRenderer.value = new SlideRenderer(props.rendererOptions)
-  updateSlide(props.slide)
+  handleUpdateSlide()
 })
-watch(() => props.slide, updateSlide, { deep: true })
+watch(() => props.slide, handleUpdateSlide, { deep: true })
 onUnmounted(() => {
   const style = document.getElementById(props.id || 'dynamic-style')
   if (style) {
