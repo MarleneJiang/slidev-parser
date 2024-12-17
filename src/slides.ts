@@ -22,6 +22,7 @@ export interface RendererOptions {
   unoConfig?: {
     customConfigRaw?: string
     customCSSLayerName?: string
+    uno?: boolean
   }
   SlideLoading?: Component
   SlideError?: Component
@@ -129,8 +130,6 @@ export class SlideRenderer {
         load: async () => ({ default: await loader() }),
         component: this.getAsyncComponent(i, loader, this.SlideLoading, this.SlideError),
         css: async () => await compileCss({
-          slidesInfo: this.slidesInfo,
-          filename: s.source.filepath,
           code: s.source.content,
           unoGenerator: this.unoGenerator,
         }),

@@ -6,6 +6,7 @@ import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 import { SlideRenderer } from '../index'
 import SlideError from './SlideError.vue'
 import SlideLoading from './SlideLoading.vue'
+import { removeCss, updateDynamicCss } from './utils'
 
 const props = defineProps({
   id: {
@@ -86,24 +87,6 @@ enum SlideStatus {
 
 const status = ref<SlideStatus>(SlideStatus.Loading)
 
-function updateDynamicCss(css: string) {
-  try {
-    // 创建一个 <style> 标签来插入 CSS
-    let style = document.getElementById(props.id || 'dynamic-style') as HTMLStyleElement
-    if (!style) {
-      style = document.createElement('style')
-      style.id = props.id || 'dynamic-style'
-      style.type = 'text/css'
-      document.head.appendChild(style)
-    }
-    // 设置新的 CSS 内容
-    style.innerHTML = css
-  }
-  catch (error) {
-    console.error('更新动态CSS时出错:', error)
-  }
-}
-
 async function updateSlide(slide: SlideSource) {
   try {
     status.value = SlideStatus.Loading
@@ -116,7 +99,7 @@ async function updateSlide(slide: SlideSource) {
     renderedComp.value = renderedSlide
     const css = await renderedSlide.css()
     if (css?.output?.css) {
-      updateDynamicCss(css.output.css)
+      updateDynamicCss(css.output.css, props.id)
     }
     status.value = SlideStatus.Loaded
   }
@@ -148,17 +131,14 @@ onMounted(() => {
 })
 watch(() => props.slide, handleUpdateSlide, { deep: true })
 onUnmounted(() => {
-  const style = document.getElementById(props.id || 'dynamic-style')
-  if (style) {
-    style.remove()
-  }
+  removeCss(props.id)
 })
 </script>
 
 <template>
   <div ref="root" class="slide-container">
     <div class="slide-content" :style="style">
-      <div class="slide-inner" :style="shouldScale ? contentStyle : ''">
+      <div :class="{ 'slide-inner': flexable }" :style="shouldScale ? contentStyle : ''">
         <template v-if="status === SlideStatus.Loading">
           <slot name="loading">
             <SlideLoading />
@@ -182,8 +162,8 @@ onUnmounted(() => {
 <style scoped>
 .slide-container {
   position: relative;
-  width: 100%;
-  height: 100%;
+  /* width: 100%; */
+  /* height: 100%; */
 }
 
 .slide-content {

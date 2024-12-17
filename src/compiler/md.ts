@@ -31,7 +31,7 @@ function parseMd(code: string) {
 </script>`
 }
 
-export async function compileCss(options: CompileOptions) {
+export async function compileCss(options: Omit<CompileOptions, 'slidesInfo' | 'filename'>) {
   const { code, unoGenerator } = options
   const vueSFC = parseMd(code) // 转换成sfc代码，不包含style
   if (!unoGenerator) {
@@ -61,7 +61,7 @@ function createlayoutWrapperTransform(slidesInfo: SlideInfo[], layouts: Record<s
   } as any)
 }
 
-async function compileVueSFC(options: CompileOptions) {
+export async function compileVueSFC(options: CompileOptions) {
   const { slidesInfo, code, filename } = options
   let vueSFC = parseMd(code) // 转换成sfc代码，不包含style
   const layoutWrapperPlugin = createlayoutWrapperTransform(slidesInfo, layouts)

@@ -6,6 +6,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { SlideRenderer } from '../index'
 import SlideError from './SlideError.vue'
 import SlideLoading from './SlideLoading.vue'
+import { removeCss, updateDynamicCss } from './utils'
 
 const props = defineProps({
   id: {
@@ -89,18 +90,6 @@ interface SlideState {
 }
 
 const slideStates = ref<SlideState[]>([])
-
-// 更新动态CSS
-function updateDynamicCss(css: string, styleId: string) {
-  let styleElement = document.getElementById(styleId) as HTMLStyleElement | null
-  if (!styleElement) {
-    styleElement = document.createElement('style')
-    styleElement.id = styleId
-    styleElement.type = 'text/css'
-    document.head.appendChild(styleElement)
-  }
-  styleElement.innerHTML = css
-}
 
 // 更新单个Slides的状态、组件和CSS
 async function updateSlide(index: number, slide: SlideSource) {
@@ -205,10 +194,7 @@ onUnmounted(() => {
   // 清理所有的 style 元素，防止内存泄漏
   slideStates.value.forEach((slideState) => {
     if (slideState.styleId) {
-      const styleElement = document.getElementById(slideState.styleId)
-      if (styleElement) {
-        styleElement.remove()
-      }
+      removeCss(slideState.styleId)
     }
   })
 })
@@ -222,7 +208,7 @@ onUnmounted(() => {
           <div
             v-for="(slide, index) in slideStates"
             :key="index"
-            class="slide-inner"
+            :class="{ 'slide-inner': flexable }"
             :style="shouldScale ? contentStyle : ''"
           >
             <template v-if="slide.status === SlideStatus.Loading">
@@ -250,8 +236,8 @@ onUnmounted(() => {
 <style scoped>
 .slide-container {
   position: relative;
-  width: 100%;
-  height: 100%;
+  /* width: 100%; */
+  /* height: 100%; */
 }
 
 .slide-content {
