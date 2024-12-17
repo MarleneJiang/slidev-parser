@@ -1,7 +1,7 @@
 <h1 align="center">slidev-parser</h1>
 
 <p align="center">
-A powerful browser-side parser and renderer for Slidev presentations, enabling real-time MDC syntax rendering and UnoCSS styling.
+强大的 Slidev 浏览器端解析渲染器，支持实时 MDC 语法渲染和 UnoCSS 样式处理。
 </p>
 
 <p align="center">
@@ -26,49 +26,50 @@ A powerful browser-side parser and renderer for Slidev presentations, enabling r
 </p>
 <br>
 
-# Features ✨
+# 功能特点 ✨
 
-- 📝 [MDC (Markdown Components)](https://content.nuxtjs.org/guide/writing/mdc) Support
-  - Use Vue components directly in Markdown
-  - Property modifiers support (e.g. `{.text-blue}`)
-  - Nested syntax and shortcuts
+- 📝 支持 [MDC (Markdown Components)](https://content.nuxtjs.org/guide/writing/mdc) 语法
+  - 可以在 Markdown 中直接使用 Vue 组件
+  - 支持属性修饰符(例如 `{.text-blue}`）
+  - 支持嵌套语法和快捷方式
 
-- 🎨 Full [UnoCSS](https://unocss.dev/) Integration
-  - Atomic CSS utilities
-  - Dynamic class names
-  - Preset icons support
-  - Custom rules and theming
+- 🎨 完整的 [UnoCSS](https://unocss.dev/) 样式支持
+  - 原子化 CSS 工具类
+  - 支持动态类名
+  - 支持预设图标
+  - 支持自定义规则和主题
 
-- 📐 Built-in Layout Templates
-  - default - Standard layout
-  - center - Centered content
-  - cover - Cover slide
-  - two-cols - Two-column layout
-  - image-right/left - Image with text
-  - iframe - Embedded frame layout
+- 📐 内置布局模板
+  - default - 默认布局
+  - center - 居中布局
+  - cover - 封面布局
+  - two-cols - 两列布局
+  - image-right/left - 图文布局
+  - iframe - 内嵌框架布局
 
-- 🔥 Advanced Features
-  - Browser-side real-time rendering
-  - Responsive design
-  - Zoom support
-  - Theme customization
+- 🔥 高级特性
+  - 浏览器端实时渲染
+  - 响应式设计
+  - 支持缩放
+  - 主题定制
 
-# Installation 📦
+# 安装 📦
 
 ```bash
-# Using npm
+# 使用 npm
 npm install slidev-parser
 
-# Using yarn
+# 使用 yarn
 yarn add slidev-parser
 
-# Using pnpm
+# 使用 pnpm
 pnpm add slidev-parser
+
 ```
 
-# Usage Guide 📖
+# 使用指南 📖
 
-## Basic Usage
+## 基础使用
 
 ```vue
 <script setup>
@@ -77,14 +78,14 @@ import 'slidev-parser/index.css'
 
 const slide = {
   frontmatter: {
-    layout: 'cover', // Use cover layout
+    layout: 'cover', // 使用封面布局
   },
   content: `
-# My Presentation {.text-blue-500}
+# 我的演示文稿 {.text-blue-500}
 
-Content written in **Markdown**
+使用 **Markdown** 编写内容
   `,
-  note: 'Speaker notes here'
+  note: '这是演讲者注释'
 }
 </script>
 
@@ -98,7 +99,7 @@ Content written in **Markdown**
 </template>
 ```
 
-## Multiple Slides
+## 多页面切换
 
 ```vue
 <script setup>
@@ -108,14 +109,14 @@ import 'slidev-parser/index.css'
 const slides = [
   {
     frontmatter: { layout: 'cover' },
-    content: '# First Page',
+    content: '# 第一页',
   },
   {
     frontmatter: { layout: 'two-cols' },
     content: `
-# Left Content
+# 左侧内容
 ::right::
-# Right Content
+# 右侧内容
     `,
   }
 ]
@@ -126,23 +127,23 @@ const slides = [
 </template>
 ```
 
-## Configuration Options
+## 配置选项
 
 ```ts
 interface RendererOptions {
-  // Markdown parser options
+  // Markdown 解析器选项
   mdOptions?: Record<string, any>
 
-  // Vue SFC compilation options
+  // Vue SFC 编译选项
   sfcOptions?: Record<string, any>
 
-  // UnoCSS configuration
+  // UnoCSS 配置
   unoConfig?: {
     customConfigRaw?: string
     customCSSLayerName?: string
   }
 
-  // Custom loading and error components
+  // 自定义加载和错误组件
   SlideLoading?: Component
   SlideError?: Component
 }
