@@ -3,7 +3,7 @@ import MagicString from 'magic-string'
 import { basename, dirname, resolve } from 'pathe'
 import { babelParse, extractIdentifiers, isInDestructureAssignment, isStaticProperty, walk, walkIdentifiers } from 'vue/compiler-sfc'
 // Ported from https://github.com/vuejs/repl/blob/main/src/output/moduleCompiler.ts
-import { moduleLoaders } from '../configs/module'
+import { moduleLoaders, resolveCustomComponent } from './moduleLoad'
 
 const importKey = `__import__`
 const exportKey = `__export__`
@@ -40,6 +40,11 @@ export function evalJs(src: string, filepath: string): () => Promise<any> {
           }
         }
       }
+
+      // 尝试解析自定义组件
+      const customComponent = resolveCustomComponent(specifier)
+      if (customComponent)
+        return customComponent
 
       // Special module
       if (moduleLoaders[specifier]) {

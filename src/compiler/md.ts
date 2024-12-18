@@ -1,25 +1,16 @@
 import type { SlideInfo } from '@slidev/types'
-import type { CompileResult } from '../types'
-import type { UnoGenerator } from './uno'
+import type { CompileCssOptions, CompileOptions, CompileResult } from '../types'
 import MarkdownIt from 'markdown-it'
 // @ts-expect-error missing types
 import MarkdownItFootnote from 'markdown-it-footnote'
 import MarkdownItMdc from 'markdown-it-mdc'
-import { layouts } from '../configs/module'
+import { createBuiltInCompWrapperPlugin, createCustomCompWrapperPlugin } from '../runtime/compWrapper'
 import { createLayoutWrapperPlugin } from '../runtime/layoutWrapper'
+import { layouts } from '../runtime/moduleLoad'
 import { generateUnoCss } from './uno'
 import { extractTemplateBody } from './utils'
 import { compileVue } from './vue'
 // import '@slidev/theme-seriph/styles/index'
-
-interface CompileOptions {
-  slidesInfo: SlideInfo[]
-  filename: string
-  code: string
-  mdOptions?: Record<string, any>
-  sfcOptions?: Record<string, any>
-  unoGenerator?: UnoGenerator
-}
 
 const mdParser = new MarkdownIt({ quotes: '""\'\'', html: true, xhtmlOut: true, linkify: true })
 mdParser.use(MarkdownItFootnote)
@@ -31,7 +22,7 @@ function parseMd(code: string) {
 </script>`
 }
 
-export async function compileCss(options: Omit<CompileOptions, 'slidesInfo' | 'filename'>) {
+export async function compileCss(options: CompileCssOptions) {
   const { code, unoGenerator } = options
   const vueSFC = parseMd(code) // 转换成sfc代码，不包含style
   if (!unoGenerator) {
@@ -62,10 +53,16 @@ function createlayoutWrapperTransform(slidesInfo: SlideInfo[], layouts: Record<s
 }
 
 export async function compileVueSFC(options: CompileOptions) {
-  const { slidesInfo, code, filename } = options
+  const { slidesInfo, code, filename, components } = options
   let vueSFC = parseMd(code) // 转换成sfc代码，不包含style
   const layoutWrapperPlugin = createlayoutWrapperTransform(slidesInfo, layouts)
   vueSFC = layoutWrapperPlugin.transform!.call({} as any, vueSFC, filename) || vueSFC // 传入预制代码，载入布局
+  // 处理自定义组件
+  if (components) {
+    const customCompPlugin = createCustomCompWrapperPlugin(components)
+    vueSFC = customCompPlugin.transform!(vueSFC) || vueSFC
+  }
+  vueSFC = createBuiltInCompWrapperPlugin().transform!(vueSFC) || vueSFC // 传入内置组件
   return vueSFC
 }
 

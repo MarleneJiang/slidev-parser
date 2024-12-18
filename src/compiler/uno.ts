@@ -4,7 +4,7 @@ import type { GenerateResult, UnoGenerator as UnoGeneratorType, UserConfig } fro
 import { createAutocomplete } from '@unocss/autocomplete'
 import MagicString from 'magic-string'
 import { createGenerator } from 'unocss'
-import { unocssBundle } from '../configs/unocssBundle'
+import { defaultConfigRaw, unocssBundle } from '../configs/unocssBundle'
 import { evaluateUserConfig } from '../runtime/config'
 
 // 定义输入和输出接口
@@ -22,31 +22,6 @@ export interface GenerateOutput {
   customConfigError?: Error
   customCSSWarn?: Error
 }
-
-const defaultConfigRaw = `import {
-  defineConfig,
-  presetAttributify,
-  presetIcons,
-  presetUno,
-} from 'unocss'
-
-export default defineConfig({
-  rules: [
-    ['custom-rule', { color: 'red' }],
-  ],
-  shortcuts: {
-    'custom-shortcut': 'text-lg text-orange hover:text-teal',
-  },
-  presets: [
-    presetUno(),
-    presetAttributify(),
-    presetIcons({
-      scale: 1.2,
-      cdn: 'https://esm.sh/',
-    }),
-  ],
-})
-`
 
 // 清理 CSS 输出的辅助函数
 function cleanOutput(code: string): string {

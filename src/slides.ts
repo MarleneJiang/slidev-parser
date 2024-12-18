@@ -1,6 +1,6 @@
-import type { SlideInfo, SlideRoute, SourceSlideInfo } from '@slidev/types'
 import type { Component } from 'vue'
 import type { GenerateOutput } from './compiler/uno'
+import type { RendererOptions, SlideInfo, SlideRoute, SlideSource, SourceSlideInfo } from './types'
 import { parseSync } from '@slidev/parser'
 import { defineAsyncComponent } from 'vue'
 import { compileCss, compileMd } from './compiler/md'
@@ -8,25 +8,8 @@ import { renderNote } from './compiler/note'
 import { UnoGenerator } from './compiler/uno'
 import SlideError from './components/SlideError.vue'
 import SlideLoading from './components/SlideLoading.vue'
-import { evalJs } from './runtime/module'
-
-export interface SlideSource {
-  frontmatter: Record<string, string>
-  content: string
-  note: string
-}
-
-export interface RendererOptions {
-  mdOptions?: Record<string, any>
-  sfcOptions?: Record<string, any>
-  unoConfig?: {
-    customConfigRaw?: string
-    customCSSLayerName?: string
-    uno?: boolean
-  }
-  SlideLoading?: Component
-  SlideError?: Component
-}
+import { evalJs } from './runtime/moduleEval'
+import { registerCustomComponent } from './runtime/moduleLoad'
 
 export interface Islide extends SlideRoute {
   css: () => Promise<GenerateOutput>
@@ -38,12 +21,20 @@ export class SlideRenderer {
   private unoGenerator: UnoGenerator
   private SlideLoading = SlideLoading
   private SlideError = SlideError
+  private customComponents: Record<string, Component>
 
   constructor(options: RendererOptions = {}) {
     this.options = {
       mdOptions: {},
       sfcOptions: {},
       ...options,
+    }
+    this.customComponents = options.components || {}
+    // 将自定义组件注册到 moduleLoaders
+    if (this.customComponents) {
+      Object.entries(this.customComponents).forEach(([name, component]) => {
+        registerCustomComponent(name, component)
+      })
     }
     if (options.SlideLoading)
       this.SlideLoading = options.SlideLoading as any
@@ -103,6 +94,7 @@ export class SlideRenderer {
           code: s.source.content,
           mdOptions: this.options.mdOptions,
           sfcOptions: this.options.sfcOptions,
+          components: this.customComponents,
         })
 
         if (!js || errors?.length) {

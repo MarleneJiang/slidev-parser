@@ -1,6 +1,6 @@
 import { ensurePrefix, slash } from '@antfu/utils'
 import { bold, gray, red, yellow } from 'kolorist'
-import { regexSlideSourceId, templateInjectRemoteComp } from '../configs/common'
+import { regexSlideSourceId } from '../configs/common'
 
 export function toAtFS(path: string) {
   return `/@fs${ensurePrefix('/', slash(path))}`
@@ -49,7 +49,6 @@ export function createLayoutWrapperPlugin(
         templatePart.slice(bodyEnd),
         scriptPart.slice(0, setupTag[0].length),
         `import InjectedLayout from "${toAtFS(layouts[layoutName])}"`,
-        templateInjectRemoteComp,
         importFormatterCode,
         // templateImportContextUtils,
         // templateInitContext,
