@@ -26,32 +26,40 @@
 </p>
 <br>
 
-# 功能特点 ✨
+# Features ✨
 
-- 📝 支持 [MDC (Markdown Components)](https://content.nuxtjs.org/guide/writing/mdc) 语法
-  - 可以在 Markdown 中直接使用 Vue 组件
-  - 支持属性修饰符(例如 `{.text-blue}`）
-  - 支持嵌套语法和快捷方式
+- 📝 **Markdown 增强**
+  - [MDC语法](https://content.nuxtjs.org/guide/writing/mdc)支持
+  - Vue 组件直接集成
+  - 样式修饰符 (如 `{.text-blue}`)
+  - 语法嵌套与快捷方式
 
-- 🎨 完整的 [UnoCSS](https://unocss.dev/) 样式支持
-  - 原子化 CSS 工具类
-  - 支持动态类名
-  - 支持预设图标
-  - 支持自定义规则和主题
+- 🎨 **UnoCSS 支持**
+  - [原子化CSS](https://unocss.dev/)工具集
+  - 动态类名生成
+  - 图标预设集成
+  - 自定义规则与主题
 
-- 📐 内置布局模板
-  - default - 默认布局
-  - center - 居中布局
-  - cover - 封面布局
-  - two-cols - 两列布局
-  - image-right/left - 图文布局
-  - iframe - 内嵌框架布局
+- 🧩 **组件生态**
+  - 远程组件动态加载
+  - 自定义组件注入
+  - 组件实时热更新
+  - 完整生命周期管理
 
-- 🔥 高级特性
+- 📐 **布局模板**
+  - `default` - 标准布局
+  - `center` - 居中布局
+  - `cover` - 封面布局
+  - `two-cols` - 双栏布局
+  - `image-right/left` - 图文布局
+  - `iframe` - 框架布局
+
+- 🔥 **高级特性**
   - 浏览器端实时渲染
-  - 响应式设计
-  - 支持缩放
-  - 主题定制
+  - 响应式设计适配
+  - 缩放控制支持
+  - 主题深度定制
+  - 组件热重载
 
 # 安装 📦
 
@@ -69,7 +77,7 @@ pnpm add slidev-parser
 
 # 使用指南 📖
 
-## 基础使用
+## Basic Usage
 
 ```vue
 <script setup>
@@ -78,14 +86,14 @@ import 'slidev-parser/index.css'
 
 const slide = {
   frontmatter: {
-    layout: 'cover', // 使用封面布局
+    layout: 'cover', // Use cover layout
   },
   content: `
-# 我的演示文稿 {.text-blue-500}
+# My Presentation {.text-blue-500}
 
-使用 **Markdown** 编写内容
+Content written in **Markdown**
   `,
-  note: '这是演讲者注释'
+  note: 'Speaker notes here'
 }
 </script>
 
@@ -99,7 +107,7 @@ const slide = {
 </template>
 ```
 
-## 多页面切换
+## Multiple Slides
 
 ```vue
 <script setup>
@@ -109,14 +117,14 @@ import 'slidev-parser/index.css'
 const slides = [
   {
     frontmatter: { layout: 'cover' },
-    content: '# 第一页',
+    content: '# First Page',
   },
   {
     frontmatter: { layout: 'two-cols' },
     content: `
-# 左侧内容
+# Left Content
 ::right::
-# 右侧内容
+# Right Content
     `,
   }
 ]
@@ -127,23 +135,77 @@ const slides = [
 </template>
 ```
 
-## 配置选项
+## 远程动态组件
+
+```vue
+<script setup>
+import { SlideRender } from 'slidev-parser'
+import 'slidev-parser/index.css'
+
+const slide = {
+  frontmatter: {
+    layout: 'cover',
+  },
+  content: `
+# My Presentation
+
+<remote url="https://gist.githubusercontent.com/MarleneJiang/b205007f50abcbc404f07127439c686a/raw/05414d8f57cf7d0af626200f73feb19d01d79619/test.vue"/>
+  `,
+  note: 'Speaker notes here'
+}
+</script>
+
+<template>
+  <SlideRender
+    id="my-slide"
+    :slide="slide"
+  />
+</template>
+```
+
+## 自定义组件
+
+```vue
+<script setup>
+import { SlideRender } from 'slidev-parser'
+import CustomComp from './CustomComp.vue'
+import 'slidev-parser/index.css'
+
+const slide = {
+  frontmatter: {
+    layout: 'cover',
+  },
+  content: `
+# My Presentation
+
+<CustomComp/>
+  `,
+  note: 'Speaker notes here'
+}
+</script>
+
+<template>
+  <SlideRender
+    id="my-slide"
+    :slide="slide"
+  />
+</template>
+```
+
+## 配置项
 
 ```ts
-interface RendererOptions {
-  // Markdown 解析器选项
+interface BaseConfigOptions {
   mdOptions?: Record<string, any>
-
-  // Vue SFC 编译选项
   sfcOptions?: Record<string, any>
-
-  // UnoCSS 配置
+  components?: Record<string, Component>
+}
+export interface RendererOptions extends BaseConfigOptions {
   unoConfig?: {
     customConfigRaw?: string
     customCSSLayerName?: string
+    uno?: boolean
   }
-
-  // 自定义加载和错误组件
   SlideLoading?: Component
   SlideError?: Component
 }

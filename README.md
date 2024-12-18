@@ -22,36 +22,44 @@ A powerful browser-side parser and renderer for Slidev presentations, enabling r
 <p align="center">
 <a target="_blank" href="./README.md">English</a>  |
 <a target="_blank" href="./README_CN.md">简体中文</a>  |
-<a target="_blank" href="https://stackblitz.com/edit/vitejs-vite-hbatbgm5?file=src%2FApp.vue">🤹‍♂️ Playground</a>
+<a target="_blank" href="https://stackblitz.com/edit/slidev-parser-demo">🤹‍♂️ Playground</a>
 </p>
 <br>
 
 # Features ✨
 
-- 📝 [MDC (Markdown Components)](https://content.nuxtjs.org/guide/writing/mdc) Support
-  - Use Vue components directly in Markdown
-  - Property modifiers support (e.g. `{.text-blue}`)
+- 📝 **Enhanced Markdown**
+  - Full [MDC](https://content.nuxtjs.org/guide/writing/mdc) support
+  - Seamless Vue component integration
+  - Style modifiers (e.g. `{.text-blue}`)
   - Nested syntax and shortcuts
 
-- 🎨 Full [UnoCSS](https://unocss.dev/) Integration
-  - Atomic CSS utilities
-  - Dynamic class names
-  - Preset icons support
-  - Custom rules and theming
+- 🎨 **UnoCSS Integration**
+  - [Atomic CSS](https://unocss.dev/) utilities
+  - Dynamic class generation
+  - Icon preset support
+  - Custom rules & theming
 
-- 📐 Built-in Layout Templates
-  - default - Standard layout
-  - center - Centered content
-  - cover - Cover slide
-  - two-cols - Two-column layout
-  - image-right/left - Image with text
-  - iframe - Embedded frame layout
+- 🧩 **Component System**
+  - Remote component loading
+  - Custom component injection
+  - Real-time component updates
+  - Full lifecycle management
 
-- 🔥 Advanced Features
-  - Browser-side real-time rendering
+- 📐 **Layout Templates**
+  - `default` - Standard layout
+  - `center` - Centered content
+  - `cover` - Cover slide
+  - `two-cols` - Two-column layout
+  - `image-right/left` - Image with text
+  - `iframe` - Embedded frame
+
+- 🔥 **Advanced Features**
+  - Browser-side rendering
   - Responsive design
-  - Zoom support
+  - Zoom controls
   - Theme customization
+  - Hot component reload
 
 # Installation 📦
 
@@ -126,23 +134,77 @@ const slides = [
 </template>
 ```
 
+## Remote Components
+
+```vue
+<script setup>
+import { SlideRender } from 'slidev-parser'
+import 'slidev-parser/index.css'
+
+const slide = {
+  frontmatter: {
+    layout: 'cover',
+  },
+  content: `
+# My Presentation
+
+<remote url="https://gist.githubusercontent.com/MarleneJiang/b205007f50abcbc404f07127439c686a/raw/05414d8f57cf7d0af626200f73feb19d01d79619/test.vue"/>
+  `,
+  note: 'Speaker notes here'
+}
+</script>
+
+<template>
+  <SlideRender
+    id="my-slide"
+    :slide="slide"
+  />
+</template>
+```
+
+## Custom Components
+
+```vue
+<script setup>
+import { SlideRender } from 'slidev-parser'
+import CustomComp from './CustomComp.vue'
+import 'slidev-parser/index.css'
+
+const slide = {
+  frontmatter: {
+    layout: 'cover',
+  },
+  content: `
+# My Presentation
+
+<CustomComp/>
+  `,
+  note: 'Speaker notes here'
+}
+</script>
+
+<template>
+  <SlideRender
+    id="my-slide"
+    :slide="slide"
+  />
+</template>
+```
+
 ## Configuration Options
 
 ```ts
-interface RendererOptions {
-  // Markdown parser options
+interface BaseConfigOptions {
   mdOptions?: Record<string, any>
-
-  // Vue SFC compilation options
   sfcOptions?: Record<string, any>
-
-  // UnoCSS configuration
+  components?: Record<string, Component>
+}
+export interface RendererOptions extends BaseConfigOptions {
   unoConfig?: {
     customConfigRaw?: string
     customCSSLayerName?: string
+    uno?: boolean
   }
-
-  // Custom loading and error components
   SlideLoading?: Component
   SlideError?: Component
 }

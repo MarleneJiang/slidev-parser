@@ -1,4 +1,4 @@
-import type { SlideInfo, SlideRoute, SourceSlideInfo } from '@slidev/types'
+import type { SlideInfo } from '@slidev/types'
 import type { Component } from 'vue'
 import type { UnoGenerator } from '../compiler/uno'
 
