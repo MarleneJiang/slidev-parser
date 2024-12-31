@@ -43,7 +43,7 @@ export class SlideRenderer {
     this.unoGenerator = new UnoGenerator(options.unoConfig)
   }
 
-  private getSlidesInfo(slidesSource: SlideSource[]): SlideInfo[] {
+  getSlidesInfo(slidesSource: SlideSource[]): SlideInfo[] {
     return slidesSource.map(
       (s, i) => ({
         frontmatter: s.frontmatter,

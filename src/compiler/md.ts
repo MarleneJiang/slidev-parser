@@ -12,11 +12,11 @@ import { extractTemplateBody } from './utils'
 import { compileVue } from './vue'
 // import '@slidev/theme-seriph/styles/index'
 
-const mdParser = new MarkdownIt({ quotes: '""\'\'', html: true, xhtmlOut: true, linkify: true })
+export const mdParser = new MarkdownIt({ quotes: '""\'\'', html: true, xhtmlOut: true, linkify: true })
 mdParser.use(MarkdownItFootnote)
 mdParser.use(MarkdownItMdc)
 
-function parseMd(code: string) {
+export function parseMd(code: string) {
   return `<template><div>${mdParser.render(code)}</div></template>
 <script setup>
 </script>`

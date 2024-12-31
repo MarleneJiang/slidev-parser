@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { generateUnoCss } from '../src/compiler/uno'
-import { SlideRenderer } from '../src/index'
+import { compileVueSFC, generateUnoCss, SlideRenderer } from '../src/index'
 
 describe('slide compiler css', async () => {
   const slidesSource = [
@@ -34,4 +33,34 @@ describe('unocss generate', async () => {
     expect(output.output?.getLayer()).toEqual(`/* layer: default */
 .mt-5{margin-top:1.25rem;}`)
   })
+})
+
+describe('vue sfc generate', async () => {
+  const renderer = new SlideRenderer()
+  const slidesData = renderer.parse(`---
+layout: fact
+---
+
+# 生成伪代码样式
+
+<div bg-pink:10 border="~ pink/50 rounded-lg" op40>
+  <div flex="~ items-center gap-2" bg-pink:10 px4 py2 rounded><div i-ph:number-circle-four text-xl /> 代码实时渲染执行</div>
+
+  <div ml2 p2 text-pink2>
+
+  - 将 MDC 代码转换为 Web 渲染可用的格式
+  - 静态编译
+  - 动态渲染
+
+  </div>
+</div>`)
+  const output = await compileVueSFC({
+    slidesInfo: renderer.getSlidesInfo(slidesData),
+    code: slidesData[0].content,
+    filename: '__slidev_0.md',
+  })
+//   it('exported', () => {
+//     expect(output).toEqual(`/* layer: default */
+// .mt-5{margin-top:1.25rem;}`)
+//   })
 })

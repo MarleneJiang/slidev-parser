@@ -1,4 +1,4 @@
-export { compileCss, compileMd, compileVueSFC } from './compiler/md'
+export { compileCss, compileMd, compileVueSFC, mdParser, parseMd } from './compiler/md'
 export { generateUnoCss, UnoGenerator } from './compiler/uno'
 export { compileVue } from './compiler/vue'
 export { default as RemoteComp } from './components/RemoteComp.vue'
