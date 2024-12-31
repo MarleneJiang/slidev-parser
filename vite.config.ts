@@ -8,6 +8,14 @@ export default defineConfig({
   plugins: [Vue(), UnoCSS({
     mode: 'vue-scoped',
   })],
+  optimizeDeps: {
+    exclude: [
+      '@iconify/utils/lib/loader/fs',
+      '@iconify/utils/lib/loader/install-pkg',
+      '@iconify/utils/lib/loader/node-loader',
+      '@iconify/utils/lib/loader/node-loaders',
+    ],
+  },
   build: {
     sourcemap: false,
     minify: 'esbuild',
@@ -18,7 +26,12 @@ export default defineConfig({
       formats: ['es', 'cjs', 'umd'], // 支持多种模块格式
     },
     rollupOptions: {
-      external: [...Object.keys(dependencies), 'vue'],
+      external: [...Object.keys(dependencies), 'vue', ...[
+        '@iconify/utils/lib/loader/fs',
+        '@iconify/utils/lib/loader/install-pkg',
+        '@iconify/utils/lib/loader/node-loader',
+        '@iconify/utils/lib/loader/node-loaders',
+      ]],
       output: {
         globals: {
           'magic-string': 'MagicString',
