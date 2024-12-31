@@ -4,7 +4,7 @@ import type { BindingMetadata, CompilerOptions, SFCDescriptor } from 'vue/compil
 import type { CompileResult } from '../types'
 import { toArray } from '@antfu/utils'
 import { hash } from 'ohash'
-import * as compiler from 'vue/compiler-sfc'
+import { compileScript, compileStyleAsync, compileTemplate, parse } from 'vue/compiler-sfc'
 import { transformTS } from './ts'
 import { isJsxFile, isTsFile } from './utils'
 
@@ -27,7 +27,7 @@ async function doCompileScript(
       expressionPlugins.push('jsx')
     }
 
-    const compiledScript = compiler.compileScript(descriptor, {
+    const compiledScript = compileScript(descriptor, {
       inlineTemplate: true,
       ...sfcOptions?.script,
       id,
@@ -74,7 +74,7 @@ async function doCompileTemplate(
     expressionPlugins.push('jsx')
   }
 
-  let { code, errors } = compiler.compileTemplate({
+  let { code, errors } = compileTemplate({
     isProd: false,
     ...sfcOptions?.template,
     ast: descriptor.template!.ast,
@@ -128,7 +128,7 @@ function isCustomElement(filename: string, sfcOptions: Record<string, any>) {
 
 export async function compileVue(filename: string, code: string, sfcOptions: Record<string, any>): Promise<CompileResult> {
   const id = hash(filename)
-  const { errors, descriptor } = compiler.parse(code, {
+  const { errors, descriptor } = parse(code, {
     filename,
     sourceMap: true,
     templateParseOptions: sfcOptions?.template?.compilerOptions,
@@ -183,7 +183,7 @@ export async function compileVue(filename: string, code: string, sfcOptions: Rec
   let clientCode = ''
 
   let clientScript: string
-  let bindings: compiler.BindingMetadata | undefined
+  let bindings: BindingMetadata | undefined
   try {
     ;[clientScript, bindings] = await doCompileScript(
       descriptor,
@@ -241,7 +241,7 @@ export async function compileVue(filename: string, code: string, sfcOptions: Rec
       }
     }
 
-    const styleResult = await compiler.compileStyleAsync({
+    const styleResult = await compileStyleAsync({
       ...sfcOptions?.style,
       source: style.content,
       filename,
