@@ -100,7 +100,7 @@ async function updateSlide(index: number, slide: SlideSource) {
 
     const css = await renderedSlide.css()
     if (css?.output?.css) {
-      const styleId = `${props.id}-${index}` // 为每个Slide生成唯一的 styleId
+      const styleId = `${props.id}-css-${index}` // 为每个Slide生成唯一的 styleId
       slideStates.value[index].styleId = styleId
       updateDynamicCss(css.output.css, styleId) // 更新该Slide对应的 CSS
     }

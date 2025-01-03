@@ -99,7 +99,7 @@ async function updateSlide(slide: SlideSource) {
     renderedComp.value = renderedSlide
     const css = await renderedSlide.css()
     if (css?.output?.css) {
-      updateDynamicCss(css.output.css, props.id)
+      updateDynamicCss(css.output.css, `${props.id}-css`)
     }
     status.value = SlideStatus.Loaded
   }
@@ -131,7 +131,7 @@ onMounted(() => {
 })
 watch(() => props.slide, handleUpdateSlide, { deep: true })
 onUnmounted(() => {
-  removeCss(props.id)
+  removeCss(`${props.id}-css`)
 })
 </script>
 

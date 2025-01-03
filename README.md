@@ -209,3 +209,7 @@ export interface RendererOptions extends BaseConfigOptions {
   SlideError?: Component
 }
 ```
+
+# Warn
+
+1. CAN NOT be used in SSR environment, if you want to use it in `Nuxt`, you can set `ssr: false` in `nuxt.config.js` to disable SSR.
