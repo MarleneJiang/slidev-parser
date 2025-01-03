@@ -151,7 +151,7 @@ onUnmounted(() => {
         </template>
         <template v-else>
           <slot name="slide" :component="renderedComp.component">
-            <component :is="renderedComp.component" />
+            <component :is="renderedComp.component" :id="id" />
           </slot>
         </template>
       </div>

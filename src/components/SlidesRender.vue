@@ -11,7 +11,7 @@ import { removeCss, updateDynamicCss } from './utils'
 const props = defineProps({
   id: {
     type: String,
-    default: 'slide',
+    default: `slide${Math.random().toString(36).substr(2, 9)}`,
   },
   slides: {
     type: Array as PropType<SlideSource[] | string>,
@@ -223,7 +223,7 @@ onUnmounted(() => {
             </template>
             <template v-else>
               <slot name="slide" :component="slide.component" :index="index">
-                <component :is="slide.component" />
+                <component :is="slide.component" :id="`${id}-${index}`" />
               </slot>
             </template>
           </div>
