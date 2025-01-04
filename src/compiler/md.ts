@@ -1,7 +1,6 @@
 import type { SlideInfo } from '@slidev/types'
 import type { CompileCssOptions, CompileOptions, CompileResult } from '../types'
 import MarkdownIt from 'markdown-it'
-// @ts-expect-error missing types
 import MarkdownItFootnote from 'markdown-it-footnote'
 import MarkdownItMdc from 'markdown-it-mdc'
 import { createBuiltInCompWrapperPlugin, createCustomCompWrapperPlugin } from '../runtime/compWrapper'
