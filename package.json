@@ -1,7 +1,7 @@
 {
   "name": "slidev-parser",
   "type": "module",
-  "version": "0.2.8",
+  "version": "0.2.9-beta.1",
   "packageManager": "pnpm@9.14.3",
   "description": "slidev-parser",
   "author": "Marlene Jiang <jiangmaling@qq.com>",
