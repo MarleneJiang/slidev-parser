@@ -104,14 +104,12 @@ async function updateRemote() {
       throw new Error('Remote content is empty')
     }
     const vueObj = await compileVue(props.name, remoteContent, props?.rendererOptions?.sfcOptions || {})
-    if (vueObj.css) {
-      if (generator.value) {
-        updateDynamicCss(`${vueObj.css}\n${(await compileCss({ code: remoteContent, unoGenerator: generator.value }))?.output?.css}`)
-      }
-      else {
-        updateDynamicCss(vueObj.css)
-      }
-    }
+    if (generator.value && vueObj.css)
+      updateDynamicCss(`${vueObj.css}\n${(await compileCss({ code: remoteContent, unoGenerator: generator.value }))?.output?.css}`, `${props.name}-css`)
+    else if (vueObj.css)
+      updateDynamicCss(vueObj.css, `${props.name}-css`)
+    else if (generator.value)
+      updateDynamicCss(`${(await compileCss({ code: remoteContent, unoGenerator: generator.value }))?.output?.css}`, `${props.name}-css`)
     renderedComp.value = getAsyncComponent(async () => (await evalJs(vueObj.js!, '')()), remoteLoading, remoteError)
     status.value = remoteStatus.Loaded
   }
