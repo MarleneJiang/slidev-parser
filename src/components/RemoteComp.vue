@@ -182,7 +182,7 @@ onUnmounted(() => {
 
 .remote-content {
   position: relative;
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 
 .remotes-wrapper {
