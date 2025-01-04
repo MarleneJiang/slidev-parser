@@ -12,7 +12,7 @@ import { removeCss, updateDynamicCss } from './utils'
 const props = defineProps({
   name: {
     type: String,
-    default: `${Date.now()}.vue`,
+    default: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.vue`,
   },
   url: {
     type: String,
