@@ -1,6 +1,8 @@
 import type { Component } from 'vue'
 import * as vueModule from 'vue'
+import { compileVue } from '../compiler/vue'
 import RemoteComp from '../components/RemoteComp.vue'
+import { evalJs } from './moduleEval'
 
 interface ModuleWrapper {
   default: Component
@@ -33,7 +35,16 @@ function loadModuleConfig() {
     }
   }
   // 注册自定义组件的方法
-  const registerCustomComponent = (name: string, component: Component) => {
+  const registerStringComponent = async (name: string, sfcCode: string, sfcOptions: any = {}) => {
+    // 如果不存在<template>和</template>则跳过
+    if (!sfcCode.includes('<template>') || !sfcCode.includes('</template>'))
+      return
+    const vueObj = await compileVue(`${name}.vue`, sfcCode, sfcOptions)
+    const vueSfcModule = (await evalJs(vueObj.js!, '')())
+    moduleLoaders[`custom:${name}`] = async () => vueSfcModule
+  }
+  // 注册自定义组件的方法
+  const registerCustomComponent = async (name: string, component: Component) => {
     const wrappedModule = wrapComponentAsModule(component)
     moduleLoaders[`custom:${name}`] = async () => wrappedModule
   }
@@ -45,6 +56,6 @@ function loadModuleConfig() {
     }
     return null
   }
-  return { moduleLoaders, layouts, registerCustomComponent, resolveCustomComponent }
+  return { moduleLoaders, layouts, registerCustomComponent, resolveCustomComponent, registerStringComponent }
 }
-export const { moduleLoaders, layouts, registerCustomComponent, resolveCustomComponent } = loadModuleConfig()
+export const { moduleLoaders, layouts, registerCustomComponent, resolveCustomComponent, registerStringComponent } = loadModuleConfig()

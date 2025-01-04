@@ -1,7 +1,7 @@
 import type { Component } from 'vue'
 import { templateInjectRemoteComp } from '../configs/common'
 
-export function createCustomCompWrapperPlugin(components: Record<string, Component>) {
+export function createCustomCompWrapperPlugin(components: Record<string, Component | string>) {
   return {
     name: 'slidev:custom-comp-wrapper',
     transform(code: string) {

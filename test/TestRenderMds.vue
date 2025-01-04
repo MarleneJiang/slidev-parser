@@ -5,8 +5,21 @@ import CustomComp from './CustomComp.vue'
 import '../dist/index.css'
 
 const rendererOptions = {
-  components: {
-    CustomComp,
+  sfcComponents: {
+    CustomComp: `<script lang="ts" setup>
+
+<\/script>
+
+<template>
+  <div>
+    我是自定义组件22😄
+  </div>
+<\/template>
+
+<style>
+
+<\/style>
+`,
   },
 }
 const slidesSource = [

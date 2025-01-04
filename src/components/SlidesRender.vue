@@ -175,11 +175,18 @@ function handleUpdateSlides(newSlides: string | SlideSource[], oldSlides: string
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   // 组件挂载时直接更新Slides
   slideRenderer.value = new SlideRenderer(props.rendererOptions)
+  !!props?.rendererOptions?.sfcComponents && (await slideRenderer.value.initSfcComponents(props?.rendererOptions?.sfcComponents))
   handleUpdateSlides(props.slides, []) // 初次加载时, 旧数组为空
 })
+watch(() => props.rendererOptions, async () => {
+  // 组件挂载时直接更新Slides
+  slideRenderer.value = new SlideRenderer(props.rendererOptions)
+  !!props?.rendererOptions?.sfcComponents && (await slideRenderer.value.initSfcComponents(props?.rendererOptions?.sfcComponents))
+  handleUpdateSlides(props.slides, []) // 初次加载时, 旧数组为空
+}, { deep: true })
 
 watch(
   () => props.slides,

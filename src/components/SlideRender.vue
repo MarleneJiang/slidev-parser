@@ -125,11 +125,17 @@ function handleUpdateSlide() {
     updateSlide(props.slide)
   }
 }
-onMounted(() => {
+onMounted(async () => {
   slideRenderer.value = new SlideRenderer(props.rendererOptions)
+  !!props?.rendererOptions?.sfcComponents && (await slideRenderer.value.initSfcComponents(props?.rendererOptions?.sfcComponents))
   handleUpdateSlide()
 })
 watch(() => props.slide, handleUpdateSlide, { deep: true })
+watch(() => props.rendererOptions, async () => {
+  slideRenderer.value = new SlideRenderer(props.rendererOptions)
+  !!props?.rendererOptions?.sfcComponents && (await slideRenderer.value.initSfcComponents(props?.rendererOptions?.sfcComponents))
+  handleUpdateSlide()
+}, { deep: true })
 onUnmounted(() => {
   removeCss(`${props.id}-css`)
 })

@@ -127,17 +127,24 @@ function getAsyncComponent(loader: () => Promise<any>, slideLoading: Component, 
     onError: e => console.error(`Failed to load remoteComp`, e),
   })
 }
-onMounted(async () => {
-  if (props?.rendererOptions?.unoConfig?.uno) {
+async function initUno() {
+  if (props?.rendererOptions?.unoConfig?.uno !== false) {
     generator.value = new UnoGenerator({
       customConfigRaw: props?.rendererOptions?.unoConfig?.customConfigRaw,
       customCSSLayerName: props?.rendererOptions?.unoConfig?.customCSSLayerName,
     })
     await generator.value.init()
   }
+}
+onMounted(async () => {
+  await initUno()
   updateRemote()
 })
 watch(() => props.url, updateRemote, { deep: true })
+watch(() => props.rendererOptions, async () => {
+  await initUno()
+  updateRemote()
+}, { deep: true })
 onUnmounted(() => {
   removeCss(props.name)
 })

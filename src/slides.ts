@@ -9,7 +9,7 @@ import { UnoGenerator } from './compiler/uno'
 import SlideError from './components/SlideError.vue'
 import SlideLoading from './components/SlideLoading.vue'
 import { evalJs } from './runtime/moduleEval'
-import { registerCustomComponent } from './runtime/moduleLoad'
+import { registerCustomComponent, registerStringComponent } from './runtime/moduleLoad'
 
 export interface Islide extends SlideRoute {
   css: () => Promise<GenerateOutput>
@@ -22,6 +22,7 @@ export class SlideRenderer {
   private SlideLoading = SlideLoading
   private SlideError = SlideError
   private customComponents: Record<string, Component>
+  private sfcComponents: Record<string, string>
 
   constructor(options: RendererOptions = {}) {
     this.options = {
@@ -30,6 +31,7 @@ export class SlideRenderer {
       ...options,
     }
     this.customComponents = options.components || {}
+    this.sfcComponents = options.sfcComponents || {}
     // 将自定义组件注册到 moduleLoaders
     if (this.customComponents) {
       Object.entries(this.customComponents).forEach(([name, component]) => {
@@ -41,6 +43,17 @@ export class SlideRenderer {
     if (options.SlideError)
       this.SlideError = options.SlideError as any
     this.unoGenerator = new UnoGenerator(options.unoConfig)
+  }
+
+  async initSfcComponents(sfcComponents: Record<string, string> = this.sfcComponents) {
+    if (sfcComponents) {
+      await Promise.all(
+        Object.entries(sfcComponents).map(([name, content]) => registerStringComponent(name, content)),
+      )
+    }
+    else {
+      console.error('sfcComponents is not defined')
+    }
   }
 
   getSlidesInfo(slidesSource: SlideSource[]): SlideInfo[] {
@@ -95,6 +108,7 @@ export class SlideRenderer {
           mdOptions: this.options.mdOptions,
           sfcOptions: this.options.sfcOptions,
           components: this.customComponents,
+          sfcComponents: this.sfcComponents,
         })
 
         if (!js || errors?.length) {
@@ -141,8 +155,9 @@ export class SlideRenderer {
 }
 
 // 保持向后兼容的函数式API
-export async function renderMds(slidesSource: SlideSource[]): Promise<Islide[]> {
-  const renderer = new SlideRenderer()
+export async function renderMds(slidesSource: SlideSource[], rendererOptions: RendererOptions = {}): Promise<Islide[]> {
+  const renderer = new SlideRenderer(rendererOptions)
+  await renderer.initSfcComponents()
   const slides = await renderer.render(slidesSource)
   return slides
 }

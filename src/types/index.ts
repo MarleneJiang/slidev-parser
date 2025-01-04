@@ -18,6 +18,7 @@ interface BaseConfigOptions {
   mdOptions?: Record<string, any>
   sfcOptions?: Record<string, any>
   components?: Record<string, Component>
+  sfcComponents?: Record<string, string>
 }
 
 export interface CompileCssOptions {

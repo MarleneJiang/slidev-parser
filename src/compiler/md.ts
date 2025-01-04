@@ -52,7 +52,7 @@ function createlayoutWrapperTransform(slidesInfo: SlideInfo[], layouts: Record<s
 }
 
 export async function compileVueSFC(options: CompileOptions) {
-  const { slidesInfo, code, filename, components } = options
+  const { slidesInfo, code, filename, components, sfcComponents } = options
   let vueSFC = parseMd(code) // 转换成sfc代码，不包含style
   const layoutWrapperPlugin = createlayoutWrapperTransform(slidesInfo, layouts)
   vueSFC = layoutWrapperPlugin.transform!.call({} as any, vueSFC, filename) || vueSFC // 传入预制代码，载入布局
@@ -60,6 +60,11 @@ export async function compileVueSFC(options: CompileOptions) {
   if (components) {
     const customCompPlugin = createCustomCompWrapperPlugin(components)
     vueSFC = customCompPlugin.transform!(vueSFC) || vueSFC
+  }
+  // 处理SFC代码组件
+  if (sfcComponents) {
+    const sfcCompPlugin = createCustomCompWrapperPlugin(sfcComponents)
+    vueSFC = sfcCompPlugin.transform!(vueSFC) || vueSFC
   }
   vueSFC = createBuiltInCompWrapperPlugin().transform!(vueSFC) || vueSFC // 传入内置组件
   return vueSFC
