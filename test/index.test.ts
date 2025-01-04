@@ -37,30 +37,52 @@ describe('unocss generate', async () => {
 
 describe('vue sfc generate', async () => {
   const renderer = new SlideRenderer()
-  const slidesData = renderer.parse(`---
-layout: fact
----
+  const slidesData = renderer.parse(`<div class="p-4 bg-red rounded">
 
-# 生成伪代码样式
+# 23423{.text-xl .text-blue}
 
-<div bg-pink:10 border="~ pink/50 rounded-lg" op40>
-  <div flex="~ items-center gap-2" bg-pink:10 px4 py2 rounded><div i-ph:number-circle-four text-xl /> 代码实时渲染执行</div>
 
-  <div ml2 p2 text-pink2>
+::remote{url="http://127.0.0.1:7000/api/component/181212ac-342c-40b9-9da3-f8d14f708881"}
 
-  - 将 MDC 代码转换为 Web 渲染可用的格式
-  - 静态编译
-  - 动态渲染
+#title
+Default slot text
 
-  </div>
+#desc
+This will be rendered in
+::
+
+
 </div>`)
   const output = await compileVueSFC({
     slidesInfo: renderer.getSlidesInfo(slidesData),
     code: slidesData[0].content,
     filename: '__slidev_0.md',
   })
-//   it('exported', () => {
-//     expect(output).toEqual(`/* layer: default */
-// .mt-5{margin-top:1.25rem;}`)
-//   })
+  // eslint-disable-next-line no-console
+  console.log(output)
+  it('exported', () => {
+    expect(output).toEqual(`<template>
+<InjectedLayout v-bind="$frontmatter">
+<div class="p-4 bg-red rounded">
+<h1 class="text-xl text-blue">23423</h1>
+<remote url="http://127.0.0.1:7000/api/component/181212ac-342c-40b9-9da3-f8d14f708881">
+<template #title="">
+<p>Default slot text</p>
+</template>
+<template #desc="">
+<p>This will be rendered in</p>
+</template>
+</remote>
+</div>
+</InjectedLayout>
+</template>
+
+<script setup>
+import remote from "built-in:remote"
+
+import InjectedLayout from "/@fs/slidev-layouts:default"
+const $frontmatter = {}
+
+</script>`)
+  })
 })

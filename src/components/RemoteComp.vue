@@ -159,7 +159,13 @@ onUnmounted(() => {
         </template>
         <template v-else>
           <slot name="remote" :component="renderedComp">
-            <component :is="renderedComp" v-bind="attrs" />
+            <component :is="renderedComp" v-bind="attrs">
+              <template v-for="(slotContent, slotName) in $slots" #[slotName]="slotProps">
+                <slot :name="slotName" v-bind="slotProps">
+                  {{ slotContent(slotProps) }}
+                </slot>
+              </template>
+            </component>
           </slot>
         </template>
       </div>
