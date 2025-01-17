@@ -46,9 +46,10 @@ export class SlideRenderer {
   }
 
   async initSfcComponents(sfcComponents: Record<string, string> = this.sfcComponents) {
+    await this.unoGenerator.init()
     if (sfcComponents) {
       await Promise.all(
-        Object.entries(sfcComponents).map(([name, content]) => registerStringComponent(name, content)),
+        Object.entries(sfcComponents).map(([name, content]) => registerStringComponent(name, content, this.unoGenerator)),
       )
     }
     else {

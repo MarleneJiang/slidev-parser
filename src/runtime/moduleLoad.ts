@@ -1,7 +1,10 @@
 import type { Component } from 'vue'
+import type { UnoGenerator } from '../compiler/uno'
 import * as vueModule from 'vue'
+import { compileCss } from '../compiler/md'
 import { compileVue } from '../compiler/vue'
 import RemoteComp from '../components/RemoteComp.vue'
+import { updateDynamicCss } from '../components/utils'
 import { evalJs } from './moduleEval'
 
 interface ModuleWrapper {
@@ -35,11 +38,17 @@ function loadModuleConfig() {
     }
   }
   // 注册自定义组件的方法
-  const registerStringComponent = async (name: string, sfcCode: string, sfcOptions: any = {}) => {
+  const registerStringComponent = async (name: string, sfcCode: string, generator: UnoGenerator, sfcOptions: any = {}) => {
     // 如果不存在<template>和</template>则跳过
     if (!sfcCode.includes('<template>') || !sfcCode.includes('</template>'))
       return
     const vueObj = await compileVue(`${name}.vue`, sfcCode, sfcOptions)
+    if (generator && vueObj.css)
+      updateDynamicCss(`${vueObj.css}\n${(await compileCss({ code: sfcCode, unoGenerator: generator }))?.output?.css}`, `${name}-css`)
+    else if (vueObj.css)
+      updateDynamicCss(vueObj.css, `${name}-css`)
+    else if (generator)
+      updateDynamicCss(`${(await compileCss({ code: sfcCode, unoGenerator: generator }))?.output?.css}`, `${name}-css`)
     const vueSfcModule = (await evalJs(vueObj.js!, '')())
     moduleLoaders[`custom:${name}`] = async () => vueSfcModule
   }
