@@ -4,6 +4,9 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable"], // 添加 DOM 相关类型定义
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "resolveJsonModule": true,
     "strict": true,
     "strictNullChecks": true,
@@ -18,6 +21,6 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts", "shims-vue.d.ts"],
+  "include": ["src/**/*.ts", "shims-vue.d.ts", "playground/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

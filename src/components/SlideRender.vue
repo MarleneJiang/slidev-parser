@@ -112,7 +112,7 @@ async function updateSlide(slide: SlideSource) {
 function handleUpdateSlide() {
   !slideRenderer.value && (slideRenderer.value = new SlideRenderer(props.rendererOptions))
   if (typeof props.slide === 'string') {
-    const slideArray = slideRenderer.value?.parse(props.slide)
+    const slideArray = SlideRenderer.parse(props.slide)
     if (slideArray && slideArray.length > 0) {
       updateSlide(slideArray[0])
     }

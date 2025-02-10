@@ -144,7 +144,7 @@ export class SlideRenderer {
     })
   }
 
-  parse(code: string) {
+  static parse(code: string) {
     return parseSync(code, '').slides.map((slide: any) => {
       return {
         frontmatter: slide.frontmatter,

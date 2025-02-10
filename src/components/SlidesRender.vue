@@ -2,7 +2,7 @@
 import type { PropType } from 'vue'
 import type { RendererOptions, SlideSource } from '../index'
 import { useElementSize } from '@vueuse/core'
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, markRaw, onMounted, onUnmounted, ref, watch } from 'vue'
 import { SlideRenderer } from '../index'
 import SlideError from './SlideError.vue'
 import SlideLoading from './SlideLoading.vue'
@@ -85,7 +85,7 @@ enum SlideStatus {
 
 interface SlideState {
   status: SlideStatus
-  component?: any
+  renderData?: any
   styleId?: string // 为每个Slides添加 styleId
 }
 
@@ -96,8 +96,8 @@ async function updateSlide(index: number, slide: SlideSource) {
   try {
     slideStates.value[index].status = SlideStatus.Loading
     const renderedSlide = (await slideRenderer.value!.render([slide]))[0] // 渲染该Slide
-    slideStates.value[index].component = renderedSlide
-
+    // 修改：使用 markRaw 包裹渲染结果以避免响应式开销
+    slideStates.value[index].renderData = markRaw(renderedSlide)
     const css = await renderedSlide.css()
     if (css?.output?.css) {
       const styleId = `${props.id}-css-${index}` // 为每个Slide生成唯一的 styleId
@@ -143,49 +143,48 @@ function handleSlideUpdates(newSlides: SlideSource[], oldSlides: SlideSource[]) 
   return Promise.all(updates)
 }
 
+// 新增：初始化 slideRenderer 的公共逻辑
+async function initSlideRenderer() {
+  slideRenderer.value = new SlideRenderer(props.rendererOptions)
+  if (props.rendererOptions?.sfcComponents) {
+    await slideRenderer.value.initSfcComponents(props.rendererOptions.sfcComponents)
+  }
+}
+
+// 优化：统一处理 slides 更新的逻辑
 function handleUpdateSlides(newSlides: string | SlideSource[], oldSlides: string | SlideSource[]) {
-  !slideRenderer.value && (slideRenderer.value = new SlideRenderer(props.rendererOptions))
   if (typeof newSlides !== typeof oldSlides) {
     console.error('Slides数据类型不一致', newSlides, oldSlides)
-    Array.from({ length: (slideStates.value.length) }).forEach((_, index) => {
-      slideStates.value[index].status = SlideStatus.Error
-    })
+    slideStates.value.forEach(slideState => slideState.status = SlideStatus.Error)
+    return
   }
-  else if (typeof newSlides === 'string' && typeof oldSlides === 'string') {
-    const newSlideArray = slideRenderer.value?.parse(newSlides)
-    const oldSlideArray = slideRenderer.value?.parse(oldSlides)
-    if (newSlideArray && newSlideArray.length > 0 && oldSlideArray && oldSlideArray.length > 0) {
-      handleSlideUpdates(newSlideArray, oldSlideArray)
-    }
-    else {
+  if (typeof newSlides === 'string') {
+    const newSlideArray = SlideRenderer.parse(newSlides)
+    const oldSlideArray = SlideRenderer.parse(oldSlides as string)
+    if (!newSlideArray?.length || !oldSlideArray?.length) {
       console.error('无法解析Slides文本', newSlideArray, oldSlideArray)
-      Array.from({ length: (slideStates.value.length) }).forEach((_, index) => {
-        slideStates.value[index].status = SlideStatus.Error
-      })
+      slideStates.value.forEach(slideState => slideState.status = SlideStatus.Error)
+      return
     }
+    handleSlideUpdates(newSlideArray, oldSlideArray)
   }
-  else if (Array.isArray(newSlides) && Array.isArray(oldSlides)) {
-    handleSlideUpdates(newSlides, oldSlides)
-  }
-  else {
-    console.error('Slides数据类型不一致', typeof newSlides, typeof oldSlides)
-    Array.from({ length: (slideStates.value.length) }).forEach((_, index) => {
-      slideStates.value[index].status = SlideStatus.Error
-    })
+  else if (Array.isArray(newSlides)) {
+    // 若状态数组长度不足，则扩充到新数组长度
+    while (slideStates.value.length < newSlides.length) {
+      slideStates.value.push({ status: SlideStatus.Loading })
+    }
+    handleSlideUpdates(newSlides, oldSlides as SlideSource[])
   }
 }
 
 onMounted(async () => {
-  // 组件挂载时直接更新Slides
-  slideRenderer.value = new SlideRenderer(props.rendererOptions)
-  !!props?.rendererOptions?.sfcComponents && (await slideRenderer.value.initSfcComponents(props?.rendererOptions?.sfcComponents))
-  handleUpdateSlides(props.slides, []) // 初次加载时, 旧数组为空
+  await initSlideRenderer()
+  // 初次更新 slides，此时旧数组为空
+  handleUpdateSlides(props.slides, [])
 })
 watch(() => props.rendererOptions, async () => {
-  // 组件挂载时直接更新Slides
-  slideRenderer.value = new SlideRenderer(props.rendererOptions)
-  !!props?.rendererOptions?.sfcComponents && (await slideRenderer.value.initSfcComponents(props?.rendererOptions?.sfcComponents))
-  handleUpdateSlides(props.slides, []) // 初次加载时, 旧数组为空
+  await initSlideRenderer()
+  handleUpdateSlides(props.slides, [])
 }, { deep: true })
 
 watch(
@@ -229,8 +228,8 @@ onUnmounted(() => {
               </slot>
             </template>
             <template v-else>
-              <slot name="slide" :component="slide.component" :index="index">
-                <component :is="slide.component" :id="`${id}-${index}`" />
+              <slot name="slide" :component="slide.renderData.component" :index="index">
+                <component :is="slide.renderData.component" :id="`${id}-${index}`" />
               </slot>
             </template>
           </div>
@@ -254,6 +253,7 @@ onUnmounted(() => {
 
 .slides-wrapper {
   display: flex;
+  flex-direction: column;
   flex-wrap: wrap;
   gap: 16px;
   justify-content: center; /* 居中对齐 */

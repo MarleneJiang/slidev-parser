@@ -5,7 +5,14 @@ import { defineConfig } from 'vite'
 import { dependencies } from './package.json'
 
 export default defineConfig({
-  plugins: [Vue(), UnoCSS({
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src'),
+    },
+  },
+  plugins: [Vue({
+    include: [/\.vue$/, 'playground/src/**/*.vue'],
+  }), UnoCSS({
     mode: 'vue-scoped',
   })],
   optimizeDeps: {
