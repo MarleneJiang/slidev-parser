@@ -22,7 +22,8 @@ A powerful browser-side parser and renderer for Slidev presentations, enabling r
 <p align="center">
 <a target="_blank" href="./README.md">English</a>  |
 <a target="_blank" href="./README_CN.md">简体中文</a>  |
-<a target="_blank" href="https://stackblitz.com/edit/slidev-parser-demo">🤹‍♂️ Playground</a>
+<a target="_blank" href="https://stackblitz.com/edit/slidev-parser-demo">🤹‍♂️ Demo</a> |
+<a target="_blank" href="https://slidev-parser.vercel.app">🚀 Playground</a>
 </p>
 <br>
 

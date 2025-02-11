@@ -22,7 +22,8 @@
 <p align="center">
 <a target="_blank" href="./README.md">English</a>  |
 <a target="_blank" href="./README_CN.md">简体中文</a>  |
-<a target="_blank" href="https://stackblitz.com/edit/vitejs-vite-hbatbgm5?file=src%2FApp.vue">🤹‍♂️ Playground</a>
+<a target="_blank" href="https://stackblitz.com/edit/slidev-parser-demo">🤹‍♂️ Demo</a> |
+<a target="_blank" href="https://slidev-parser.vercel.app">🚀 Playground</a>
 </p>
 <br>
 
