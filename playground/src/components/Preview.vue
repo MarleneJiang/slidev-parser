@@ -15,7 +15,7 @@ const inputSlides = computed(() => SlideRenderer.parse(inputMDC.value))
 
 <template>
   <div class="wrapper">
-    <SlidesRender id="slide" :slides="inputSlides" :renderer-options="rendererOptions" />
+    <SlidesRender id="slide" :slides="inputSlides" :renderer-options="rendererOptions" :flexable="true" :slide-width="750" :slide-height="421" />
   </div>
 </template>
 

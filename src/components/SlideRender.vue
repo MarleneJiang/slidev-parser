@@ -72,9 +72,11 @@ const style = computed(() => ({
 }))
 
 const contentStyle = computed(() => ({
-  height: shouldScale.value ? `${props.slideHeight}px` : '100%',
-  width: shouldScale.value ? `${props.slideWidth}px` : '100%',
-  transform: `translate(-50%, -50%) scale(${scale.value})`,
+  transform: `scale(${Math.min(scale.value, 1)})`,
+  transformOrigin: 'top left', // 确保从左上角开始缩放
+  transition: 'transform 0.1s ease',
+  width: `${Math.max(props.slideWidth ?? width.value, width.value)}px`, // 设置内容区域的原始宽度
+  height: `${Math.max(props.slideHeight ?? height.value, height.value)}px`, // 设置内容区域的原始高度
 }))
 
 const renderedComp = shallowRef()
@@ -177,18 +179,9 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-.slides-wrapper {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  justify-content: center; /* 居中对齐 */
-}
-
 .slide-inner {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  transform-origin: center;
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 </style>

@@ -123,6 +123,9 @@ importers:
       '@unocss/preset-web-fonts':
         specifier: ^65.4.3
         version: 65.4.3
+      '@unocss/reset':
+        specifier: ^65.4.3
+        version: 65.4.3
       '@vitejs/plugin-vue':
         specifier: ^5.2.1
         version: 5.2.1(vite@6.0.1(@types/node@22.10.1)(jiti@2.4.1)(terser@5.37.0)(tsx@4.19.2)(yaml@2.6.1))(vue@3.5.13(typescript@5.7.2))
@@ -1302,6 +1305,9 @@ packages:
 
   '@unocss/reset@0.65.1':
     resolution: {integrity: sha512-qyxF7rKGX+Cu3FpV8KCRQbtCvFcBpmzvx5A2wal77tIhrFR5VSH7NzCVmgs2+V9FXvU3aWVNZ79i1KMnLZ5Mjg==}
+
+  '@unocss/reset@65.4.3':
+    resolution: {integrity: sha512-f9QnMtY1yPS1HEIkeKmSwUYcp4QS6zdo9ZcIFE9PDSLOcns3v+M1lTQg8mLChxJHVl73Cf6PofWVh5tmnxV53Q==}
 
   '@unocss/rule-utils@0.65.1':
     resolution: {integrity: sha512-XGXdXsRmIuMDQk/3Fd3g5JMhsyDGWsTfs6aN4vFQ1rfdSgY4UwbslqUNbIH9xxoTfmzUOJ2lhNrFw78RygCNSA==}
@@ -5203,6 +5209,8 @@ snapshots:
       '@unocss/rule-utils': 0.65.1
 
   '@unocss/reset@0.65.1': {}
+
+  '@unocss/reset@65.4.3': {}
 
   '@unocss/rule-utils@0.65.1':
     dependencies:

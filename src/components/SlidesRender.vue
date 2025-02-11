@@ -72,9 +72,11 @@ const style = computed(() => ({
 }))
 
 const contentStyle = computed(() => ({
-  height: shouldScale.value ? `${props.slideHeight}px` : '100%',
-  width: shouldScale.value ? `${props.slideWidth}px` : '100%',
-  transform: `translate(-50%, -50%) scale(${scale.value})`,
+  transform: `scale(${Math.min(scale.value, 1)})`,
+  transformOrigin: 'top left', // 确保从左上角开始缩放
+  transition: 'transform 0.1s ease',
+  width: `${Math.max(props.slideWidth ?? width.value, width.value)}px`, // 设置内容区域的原始宽度
+  height: `${Math.max(props.slideHeight ?? height.value, height.value)}px`, // 设置内容区域的原始高度
 }))
 
 enum SlideStatus {
@@ -207,43 +209,48 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="root" class="slide-container">
-    <div class="slide-content" :style="style">
-      <slot name="slides-wrapper" :slides="slideStates">
-        <div class="slides-wrapper">
-          <div
-            v-for="(slide, index) in slideStates"
-            :key="index"
-            :class="{ 'slide-inner': flexable }"
-            :style="shouldScale ? contentStyle : ''"
-          >
-            <template v-if="slide.status === SlideStatus.Loading">
-              <slot name="loading">
-                <SlideLoading />
-              </slot>
-            </template>
-            <template v-else-if="slide.status === SlideStatus.Error">
-              <slot name="error">
-                <SlideError />
-              </slot>
-            </template>
-            <template v-else>
-              <slot name="slide" :component="slide.renderData.component" :index="index">
-                <component :is="slide.renderData.component" :id="`${id}-${index}`" />
-              </slot>
-            </template>
+  <div ref="root" class="slides-container">
+    <slot name="slides-wrapper" :slides="slideStates">
+      <div v-for="(slide, index) in slideStates" :key="index" class="slides-wrapper" :style="style">
+        <div class="absolute top-0 right-0 px2 py1 border-b border-l rounded-lb bg-main border-main select-none">
+          <div class="text-xs op50">
+            {{ index }}
           </div>
         </div>
-      </slot>
-    </div>
+        <div :class="{ 'slide-inner': flexable }" :style="shouldScale ? contentStyle : ''">
+          <template v-if="slide.status === SlideStatus.Loading">
+            <slot name="loading">
+              <SlideLoading />
+            </slot>
+          </template>
+          <template v-else-if="slide.status === SlideStatus.Error">
+            <slot name="error">
+              <SlideError />
+            </slot>
+          </template>
+          <template v-else>
+            <slot name="slide" :component="slide.renderData.component" :index="index">
+              <component :is="slide.renderData.component" :id="`${id}-${index}`" />
+            </slot>
+          </template>
+        </div>
+      </div>
+    </slot>
   </div>
 </template>
 
 <style scoped>
-.slide-container {
+.slides-container {
   position: relative;
+  margin: 1rem;
   /* width: 100%; */
   /* height: 100%; */
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 16px;
+  justify-content: center;
+  /* 居中对齐 */
 }
 
 .slide-content {
@@ -252,18 +259,12 @@ onUnmounted(() => {
 }
 
 .slides-wrapper {
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-  gap: 16px;
-  justify-content: center; /* 居中对齐 */
+  @apply border rounded border-main overflow-hidden bg-main select-none h-max relative;
 }
 
 .slide-inner {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  transform-origin: center;
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 </style>

@@ -90,6 +90,7 @@
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^22.10.1",
     "@unocss/preset-web-fonts": "^65.4.3",
+    "@unocss/reset": "^65.4.3",
     "@vitejs/plugin-vue": "^5.2.1",
     "bumpp": "^9.8.1",
     "codemirror": "^6.0.1",
