@@ -4,6 +4,7 @@ import { SlideRenderer, SlidesRender } from '@/index'
 import { computed } from 'vue'
 import { inputMDC } from '../composables/url'
 import CustomComp from './CustomComp.vue'
+import SlideBottom from './SlideBottom.vue'
 
 const rendererOptions = {
   components: {
@@ -15,7 +16,14 @@ const inputSlides = computed(() => SlideRenderer.parse(inputMDC.value))
 
 <template>
   <div class="wrapper">
-    <SlidesRender id="slide" :slides="inputSlides" :renderer-options="rendererOptions" :flexable="true" :slide-width="750" :slide-height="421" />
+    <SlidesRender
+      id="slide" :slides="inputSlides" :renderer-options="rendererOptions" :flexable="true"
+      :slide-width="750" :slide-height="421"
+    >
+      <template #slide-bottom="{ index }">
+        <SlideBottom :current-slide-route="{ no: index }" />
+      </template>
+    </SlidesRender>
   </div>
 </template>
 
@@ -31,14 +39,17 @@ const inputSlides = computed(() => SlideRenderer.parse(inputMDC.value))
   width: 8px;
   height: 8px;
 }
+
 .wrapper::-webkit-scrollbar-corner {
   background-color: var(--cm-ttc-c-track);
 }
+
 .wrapper::-webkit-scrollbar-thumb {
   background-color: var(--cm-ttc-c-thumb);
   border-radius: 3px;
   border: 2px solid var(--cm-ttc-c-thumb);
 }
+
 .wrapper::-webkit-scrollbar-track {
   background: var(--cm-ttc-c-track);
 }

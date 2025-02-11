@@ -210,6 +210,7 @@ onUnmounted(() => {
 
 <template>
   <div ref="root" class="slides-container">
+    <slot name="global-top" />
     <slot name="slides-wrapper" :slides="slideStates">
       <div v-for="(slide, index) in slideStates" :key="index" class="slides-wrapper" :style="style">
         <div class="absolute top-0 right-0 px2 py1 border-b border-l rounded-lb bg-main border-main select-none">
@@ -229,13 +230,16 @@ onUnmounted(() => {
             </slot>
           </template>
           <template v-else>
+            <slot name="slide-top" :index="index" />
             <slot name="slide" :component="slide.renderData.component" :index="index">
               <component :is="slide.renderData.component" :id="`${id}-${index}`" />
             </slot>
+            <slot name="slide-bottom" :index="index" />
           </template>
         </div>
       </div>
     </slot>
+    <slot name="global-bottom" />
   </div>
 </template>
 

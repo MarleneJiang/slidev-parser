@@ -145,6 +145,7 @@ onUnmounted(() => {
 
 <template>
   <div ref="root" class="slide-container">
+    <slot name="global-top" />
     <div class="slide-content" :style="style">
       <div :class="{ 'slide-inner': flexable }" :style="shouldScale ? contentStyle : ''">
         <template v-if="status === SlideStatus.Loading">
@@ -158,12 +159,15 @@ onUnmounted(() => {
           </slot>
         </template>
         <template v-else>
+          <slot name="slide-top" />
           <slot name="slide" :component="renderedComp.component">
             <component :is="renderedComp.component" :id="id" />
           </slot>
+          <slot name="slide-bottom" />
         </template>
       </div>
     </div>
+    <slot name="global-bottom" />
   </div>
 </template>
 
