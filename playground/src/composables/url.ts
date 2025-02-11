@@ -19,7 +19,7 @@ export const inputMDC = ref(decode(params.get('mdc') || '') || defaultMDC)
 export const options: Ref<RendererOptions> = ref(JSON.parse(decode(params.get('options') || '') || defaultOptions))
 
 export function updateUrl() {
-  const url = new URL('/play/', window.location.origin)
+  const url = new URL('/', window.location.origin)
   params.set('mdc', encode(inputMDC.value))
   // params.set('options', encode(JSON.stringify(options.value)))
   localStorage.setItem(STORAGE_KEY, url.search)
