@@ -47,7 +47,8 @@
     "release": "bumpp && pnpm publish",
     "start": "vite start",
     "test": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:playground": "BUILD_TARGET=playground vite build"
   },
   "dependencies": {
     "@antfu/utils": "^0.7.10",

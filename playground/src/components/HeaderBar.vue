@@ -56,7 +56,7 @@ function handleReset() {
       />
       <a
         i-ri-github-line icon-btn
-        href="https://github.com/unocss/unocss"
+        href="https://github.com/MarleneJiang/slidev-parser"
         target="_blank"
         title="GitHub"
       />

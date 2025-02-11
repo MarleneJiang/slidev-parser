@@ -37,7 +37,7 @@ describe('unocss generate', async () => {
 
 describe('vue sfc generate', async () => {
   const renderer = new SlideRenderer()
-  const slidesData = renderer.parse(`  <div class="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 p-8">
+  const slidesData = SlideRenderer.parse(`  <div class="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 p-8">
     <div class="grid grid-cols-3 gap-6">
       <div class="backdrop-blur-md bg-white/10 border border-white/20 rounded-lg p-6 hover:bg-white/20 transition-all duration-300">
         <div class="flex items-center mb-4">
