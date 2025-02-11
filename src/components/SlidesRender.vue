@@ -175,6 +175,10 @@ function handleUpdateSlides(newSlides: string | SlideSource[], oldSlides: string
     while (slideStates.value.length < newSlides.length) {
       slideStates.value.push({ status: SlideStatus.Loading })
     }
+    // 若新数组长度小于旧数组，则删除多余的状态
+    if (slideStates.value.length > newSlides.length) {
+      slideStates.value.splice(newSlides.length)
+    }
     handleSlideUpdates(newSlides, oldSlides as SlideSource[])
   }
 }
