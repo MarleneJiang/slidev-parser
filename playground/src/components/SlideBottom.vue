@@ -152,7 +152,7 @@ function usePloy(number = 16) {
     })
   }
 
-  watch(props.currentSlideRoute, () => {
+  watch(props, () => {
     jumpPoints()
   })
 

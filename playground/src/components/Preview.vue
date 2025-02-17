@@ -17,8 +17,7 @@ const inputSlides = computed(() => SlideRenderer.parse(inputMDC.value))
 <template>
   <div class="wrapper">
     <SlidesRender
-      id="slide" :slides="inputSlides" :renderer-options="rendererOptions" :flexable="true"
-      :slide-width="750" :slide-height="421"
+      id="slide" :slides="inputSlides" :renderer-options="rendererOptions"
     >
       <template #slide-bottom="{ index }">
         <SlideBottom :current-slide-route="{ no: index }" />

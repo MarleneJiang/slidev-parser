@@ -23,11 +23,11 @@ const props = defineProps({
   },
   slideWidth: {
     type: Number,
-    default: undefined,
+    default: 980,
   },
   slideHeight: {
     type: Number,
-    default: undefined,
+    default: 552,
   },
   zoom: {
     type: Number,
@@ -39,7 +39,7 @@ const props = defineProps({
   },
   flexable: {
     type: Boolean,
-    default: false,
+    default: true,
   },
 })
 
