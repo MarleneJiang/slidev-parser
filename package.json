@@ -40,7 +40,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "vite build && tsc --emitDeclarationOnly",
+    "build": "vite build && tsc --project tsconfig.build.json --emitDeclarationOnly",
     "dev": "vite serve ./",
     "lint": "eslint .",
     "prepublishOnly": "nr build",
