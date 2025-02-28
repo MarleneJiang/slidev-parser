@@ -17,11 +17,12 @@ const params = new URLSearchParams(
 
 export const inputMDC = ref(decode(params.get('mdc') || '') || defaultMDC)
 export const options: Ref<RendererOptions> = ref(JSON.parse(decode(params.get('options') || '') || defaultOptions))
-
+export const mode = ref(params.get('mode') || 'editor')
 export function updateUrl() {
   const url = new URL('/', window.location.origin)
   params.set('mdc', encode(inputMDC.value))
-  // params.set('options', encode(JSON.stringify(options.value)))
+  params.set('options', encode(JSON.stringify(options.value)))
+  params.set('mode', mode.value)
   localStorage.setItem(STORAGE_KEY, url.search)
   window.history.replaceState('', '', `${url.pathname}#${params}`)
 }

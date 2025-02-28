@@ -169,7 +169,7 @@ onUnmounted(() => {
             <component :is="renderedComp" v-bind="attrs">
               <template v-for="(slotContent, slotName) in $slots" #[slotName]="slotProps">
                 <slot :name="slotName" v-bind="slotProps">
-                  {{ slotContent(slotProps) }}
+                  {{ slotContent && slotContent(slotProps) || '' }}
                 </slot>
               </template>
             </component>

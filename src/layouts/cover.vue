@@ -9,7 +9,7 @@
   @apply h-full grid;
 
   h1 {
-    @apply text-6xl leading-20;
+    @apply text-5xl leading-20;
   }
 
   h1 + p {

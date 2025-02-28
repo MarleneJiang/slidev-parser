@@ -26,6 +26,10 @@ function handleReset() {
     inputMDC.value = ''
   }
 }
+
+function handleDownload() {
+
+}
 </script>
 
 <template>
@@ -66,6 +70,12 @@ function handleReset() {
         icon-btn
         title="Toggle Color Mode"
         @click="toggleDark"
+      />
+      <button
+        i-ri-download-line
+        icon-btn
+        title="Download"
+        @click="handleDownload"
       />
     </div>
   </div>

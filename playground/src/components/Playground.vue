@@ -2,6 +2,7 @@
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 import { Pane, Splitpanes } from 'splitpanes'
 import { ref } from 'vue'
+import { mode } from '../composables/url'
 import Editor from './Edit.vue'
 import HeaderBar from './HeaderBar.vue'
 import Preview from './Preview.vue'
@@ -10,7 +11,7 @@ const bp = useBreakpoints(breakpointsTailwind)
 const isMobile = bp.smaller('sm')
 const isResizing = ref(false)
 
-const paneSize = ref(50)
+const paneSize = ref(mode.value === 'preview' ? 0 : 50)
 const savedSize = ref(50)
 
 function toggleSize() {
