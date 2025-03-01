@@ -22,7 +22,8 @@ const showLoginModal = ref(false)
 const showFileNameModal = ref(false) // 新增：控制文件名输入弹窗显示
 const slidesFileName = ref('') // 新增：存储用户输入的文件名
 const isLoading = ref(false)
-const { buildingState, loadingSteps, handleStateChange, handleComplete, startSlidesBuilding } = useMultiStepBuilding()
+const showCompletionModal = ref(false) // 新增：控制构建完成弹窗显示
+const { buildingState, loadingSteps, handleStateChange, startSlidesBuilding, slidesUrl } = useMultiStepBuilding()
 
 function handleShare() {
   const url = new URL(window.location.href)
@@ -78,17 +79,56 @@ async function handleStartBuilding() {
 }
 
 // 新增：处理确认构建按钮点击
-function handleConfirmBuild() {
+async function handleConfirmBuild() {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.user) {
+    showFileNameModal.value = false
+    showLoginModal.value = true
+    return
+  }
   if (slidesFileName.value.trim()) {
     // 关闭弹窗
     showFileNameModal.value = false
-    // 执行构建，传入文件名
-    startSlidesBuilding(slidesFileName.value)
+    // Define the Markdown front matter pattern
+    const frontMatterPattern = '---\nlayout: intro\n---\n'
+
+    // Process the Markdown content
+    const mdc = inputMDC.value.startsWith(frontMatterPattern)
+      ? encode(inputMDC.value.slice(frontMatterPattern.length))
+      : encode(inputMDC.value)
+
+    // Get username with fallback
+    const userName = session.user.user_metadata?.user_name || session.user.email || 'user'
+
+    // Execute build with sanitized filename
+    await startSlidesBuilding(slidesFileName.value.trim(), mdc, userName)
   }
 }
 
-function handleDownload() {
-  handleStartBuilding()
+function handleComplete() {
+  // 显示构建完成弹窗
+  if (slidesUrl.value) {
+    showCompletionModal.value = true
+  }
+}
+
+// 新增：在新标签页打开链接
+function openInNewTab() {
+  if (slidesUrl.value) {
+    window.open(slidesUrl.value, '_blank')
+    // showCompletionModal.value = false
+  }
+}
+
+// 新增：复制构建链接
+function copyBuildLink() {
+  if (slidesUrl.value) {
+    copy(slidesUrl.value)
+    // 短暂延迟后关闭弹窗
+    // setTimeout(() => {
+    //   showCompletionModal.value = false
+    // }, 1500)
+  }
 }
 </script>
 
@@ -135,7 +175,7 @@ function handleDownload() {
         i-ri-download-line
         icon-btn
         title="Download"
-        @click="handleDownload"
+        @click="handleStartBuilding"
       />
     </div>
 
@@ -190,7 +230,7 @@ function handleDownload() {
             取消
           </button>
           <button
-            class="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600"
+            class="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
             :disabled="!slidesFileName.trim()"
             @click="handleConfirmBuild"
           >
@@ -200,9 +240,47 @@ function handleDownload() {
       </div>
     </div>
 
+    <!-- 新增：构建完成弹窗 -->
+    <div v-if="showCompletionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white dark:bg-gray/10 p-6 rounded-lg shadow-lg max-w-md w-full backdrop-blur-2xl">
+        <h3 class="text-lg font-bold mb-4">
+          构建完成
+        </h3>
+        <p class="mb-2">
+          您的Slides已成功构建。您可以通过以下链接访问：
+        </p>
+        <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded mb-4 text-sm break-all">
+          {{ slidesUrl }}
+        </div>
+        <div class="flex justify-end gap-3">
+          <button
+            class="px-4 py-2 rounded bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500"
+            @click="showCompletionModal = false"
+          >
+            关闭
+          </button>
+          <button
+            class="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600 flex items-center gap-1"
+            @click="copyBuildLink"
+          >
+            <div :class="copied ? 'i-ri-checkbox-circle-line' : 'i-ri-clipboard-line'" />
+            {{ copied ? '已复制' : '复制链接' }}
+          </button>
+          <button
+            class="px-4 py-2 rounded bg-green-500 text-white hover:bg-green-600 flex items-center gap-1"
+            @click="openInNewTab"
+          >
+            <div class="i-ri-external-link-line" />
+            打开链接
+          </button>
+        </div>
+      </div>
+    </div>
+
     <MultiStepLoader
       :steps="loadingSteps"
       :loading="buildingState.showSteps"
+      :prevent-close="true"
       @state-change="handleStateChange"
       @complete="handleComplete"
       @close="buildingState.close"

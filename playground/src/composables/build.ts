@@ -9,6 +9,9 @@ interface Step {
   action?: () => void // Function to execute when step is active
 }
 export function useMultiStepBuilding() {
+  const requestId = ref('')
+  const runId = ref('')
+  const slidesUrl = ref('')
   // State management
   const loaderStates = reactive({
     triggerWorkflow: false,
@@ -24,12 +27,12 @@ export function useMultiStepBuilding() {
     {
       text: 'Trigger Workflow',
       async: loaderStates.triggerWorkflow,
-      afterText: 'workflow triggered',
+      afterText: `workflow(ID:${runId.value}) triggered`,
     },
     {
       text: 'Build Slides Website',
       async: loaderStates.isBuilding,
-      afterText: 'slides website built',
+      afterText: `slides(ID:${requestId.value}) built`,
     },
     {
       text: 'Redirecting',
@@ -47,25 +50,113 @@ export function useMultiStepBuilding() {
   // Handle Loading Complete
   }
   function handleBuildingComplete() {
-  // eslint-disable-next-line no-alert
-    alert('Slides was built, redirecting...')
     buildingState.close()
+    const url = `https://talks.idealeap.cn/playground/${requestId.value}`
+    slidesUrl.value = url
   }
 
-  async function startSlidesBuilding(name?: string, mdc?: string) {
+  async function triggerWorkflow(name?: string, mdc?: string, user?: string) {
+    const myHeaders = new Headers()
+    myHeaders.append('Content-Type', 'application/json')
+
+    const raw = JSON.stringify({
+      ref: 'main',
+      inputs: {
+        environment: 'playground',
+        version: user,
+        content: mdc,
+        title: name,
+      },
+    })
+
+    const requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: raw,
+    }
+
+    const res = await fetch('https://slidefly.idealeap.cn/api/trigger-workflow', requestOptions)
+    if (!res.ok) {
+      throw new Error('Failed to trigger workflow')
+      return
+    }
+    const data = await res.json()
+    if (!data.request_id || !data.run_id) {
+      throw new Error('Failed to trigger workflow')
+      return
+    }
+    requestId.value = data.request_id
+    runId.value = data.run_id
+    loaderStates.triggerWorkflow = false
+  }
+
+  async function checkWorkflowStatus(runId: string) {
+    const MAX_ATTEMPTS = 60 // Maximum number of polling attempts
+    const INITIAL_INTERVAL = 2000 // Start with 2 second interval
+    const MAX_INTERVAL = 30000 // Maximum 30 second interval
+
+    // Status check with exponential backoff
+    let attempts = 0
+    let interval = INITIAL_INTERVAL
+
+    const getStatus = async () => {
+      try {
+        const res = await fetch(`https://slidefly.idealeap.cn/api/workflow-status/${runId}`, {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+        })
+
+        if (!res.ok) {
+          throw new Error(`API error: ${res.status}`)
+        }
+
+        const data = await res.json()
+        return data?.status || null
+      }
+      catch (error) {
+        console.error('Status check failed:', error)
+        return null
+      }
+    }
+
+    while (attempts < MAX_ATTEMPTS) {
+      const status = await getStatus()
+
+      // Handle different status types
+      if (status === 'completed') {
+        loaderStates.isBuilding = false
+        return
+      }
+      else if (['failed', 'cancelled', 'timed_out'].includes(status)) {
+        throw new Error(`Workflow ${status}`)
+      }
+
+      // Wait before next attempt with exponential backoff
+      await new Promise(resolve => setTimeout(resolve, interval))
+      interval = Math.min(interval * 1.5, MAX_INTERVAL) // Exponential backoff
+      attempts++
+    }
+
+    throw new Error('Workflow status check timed out')
+  }
+
+  async function startSlidesBuilding(name?: string, mdc?: string, user?: string) {
   // Reset states
     buildingState.showSteps = true
     loaderStates.triggerWorkflow = true
     loaderStates.isBuilding = true
+    requestId.value = ''
+    runId.value = ''
+    slidesUrl.value = ''
 
     // Simulate async operations
     async function simulateAsyncStep(stateProp: keyof typeof loaderStates) {
-      return new Promise<void>((resolve) => {
-        setTimeout(() => {
-          loaderStates[stateProp] = false
-          resolve()
-        }, 2000)
-      })
+      if (stateProp === 'triggerWorkflow') {
+        await triggerWorkflow(name, mdc, user)
+      }
+      else if (stateProp === 'isBuilding') {
+        await checkWorkflowStatus(runId.value)
+      }
     }
 
     try {
@@ -79,5 +170,5 @@ export function useMultiStepBuilding() {
       buildingState.close()
     }
   }
-  return { loaderStates, buildingState, loadingSteps, handleStateChange, handleComplete, handleBuildingComplete, startSlidesBuilding }
+  return { loaderStates, buildingState, loadingSteps, handleStateChange, handleComplete, handleBuildingComplete, startSlidesBuilding, slidesUrl }
 }
