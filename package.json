@@ -87,6 +87,7 @@
     "@codemirror/view": "^6.36.2",
     "@lezer/highlight": "^1.2.1",
     "@slidev/types": "0.50.0-beta.10",
+    "@supabase/supabase-js": "^2.49.1",
     "@types/babel__standalone": "^7.1.9",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^22.10.1",
