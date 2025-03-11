@@ -21,6 +21,7 @@ const { copy, copied } = useClipboard()
 const showLoginModal = ref(false)
 const showFileNameModal = ref(false) // 新增：控制文件名输入弹窗显示
 const slidesFileName = ref('') // 新增：存储用户输入的文件名
+const slidesAspectRatio = ref('16/9') // 新增：存储用户选择的尺寸比例
 const isLoading = ref(false)
 const showCompletionModal = ref(false) // 新增：控制构建完成弹窗显示
 const { buildingState, loadingSteps, handleStateChange, startSlidesBuilding, slidesUrl } = useMultiStepBuilding()
@@ -100,8 +101,13 @@ async function handleConfirmBuild() {
     // Get username with fallback
     const userName = session.user.user_metadata?.user_name || session.user.email || 'user'
 
-    // Execute build with sanitized filename
-    await startSlidesBuilding(slidesFileName.value.trim(), mdc, userName)
+    // Execute build with sanitized filename and aspect ratio
+    await startSlidesBuilding(
+      slidesFileName.value.trim(),
+      mdc,
+      userName,
+      slidesAspectRatio.value, // 新增：传递尺寸参数
+    )
   }
 }
 
@@ -213,15 +219,52 @@ function copyBuildLink() {
     <div v-if="showFileNameModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white dark:bg-gray/10 p-6 rounded-lg shadow-lg max-w-sm w-full backdrop-blur-2xl">
         <h3 class="text-lg font-bold mb-4">
-          输入Slides文件名
+          输入Slides设置
         </h3>
-        <input
-          v-model="slidesFileName"
-          type="text"
-          placeholder="请输入文件名"
-          class="w-full p-2 mb-4 border rounded dark:bg-gray-700 dark:border-gray-600"
-          @keyup.enter="handleConfirmBuild"
-        >
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-1">文件名</label>
+          <input
+            v-model="slidesFileName"
+            type="text"
+            placeholder="请输入文件名"
+            class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+          >
+        </div>
+
+        <!-- 新增：尺寸选择 -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-2">幻灯片尺寸</label>
+          <div class="flex flex-wrap gap-3">
+            <label class="inline-flex items-center cursor-pointer">
+              <input
+                v-model="slidesAspectRatio"
+                type="radio"
+                value="16/9"
+                class="mr-1"
+              >
+              <span>16:9 (宽屏)</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+              <input
+                v-model="slidesAspectRatio"
+                type="radio"
+                value="4/3"
+                class="mr-1"
+              >
+              <span>4:3 (传统)</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+              <input
+                v-model="slidesAspectRatio"
+                type="radio"
+                value="1/1"
+                class="mr-1"
+              >
+              <span>1:1 (方形)</span>
+            </label>
+          </div>
+        </div>
+
         <div class="flex justify-end gap-3">
           <button
             class="px-4 py-2 rounded bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray/10"

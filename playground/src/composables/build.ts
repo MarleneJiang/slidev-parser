@@ -1,4 +1,5 @@
 /* eslint-disable unused-imports/no-unused-vars */
+import { decompressFromEncodedURIComponent as decode, compressToEncodedURIComponent as encode } from 'lz-string'
 import { computed, reactive, ref } from 'vue'
 
 interface Step {
@@ -55,7 +56,7 @@ export function useMultiStepBuilding() {
     slidesUrl.value = url
   }
 
-  async function triggerWorkflow(name?: string, mdc?: string, user?: string) {
+  async function triggerWorkflow(name?: string, mdc?: string, user?: string, aspectRatio?: string) {
     const myHeaders = new Headers()
     myHeaders.append('Content-Type', 'application/json')
 
@@ -66,6 +67,7 @@ export function useMultiStepBuilding() {
         version: user,
         content: mdc,
         title: name,
+        args: encode(JSON.stringify({ aspectRatio })),
       },
     })
 
@@ -140,7 +142,7 @@ export function useMultiStepBuilding() {
     throw new Error('Workflow status check timed out')
   }
 
-  async function startSlidesBuilding(name?: string, mdc?: string, user?: string) {
+  async function startSlidesBuilding(name?: string, mdc?: string, user?: string, aspectRatio?: string) {
   // Reset states
     buildingState.showSteps = true
     loaderStates.triggerWorkflow = true
@@ -152,7 +154,7 @@ export function useMultiStepBuilding() {
     // Simulate async operations
     async function simulateAsyncStep(stateProp: keyof typeof loaderStates) {
       if (stateProp === 'triggerWorkflow') {
-        await triggerWorkflow(name, mdc, user)
+        await triggerWorkflow(name, mdc, user, aspectRatio)
       }
       else if (stateProp === 'isBuilding') {
         await checkWorkflowStatus(runId.value)
