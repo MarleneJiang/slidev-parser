@@ -20,6 +20,7 @@ export function createLayoutWrapperPlugin(
         return
       const index = +no
       const layouts = utils.getLayouts()
+
       const rawLayoutName = data.slides[index]?.frontmatter?.layout ?? data.slides[0]?.frontmatter?.default?.layout
       const frontmatter = data.slides[index]?.frontmatter ?? data.slides[0]?.frontmatter?.default
       const importFormatterCode = `const $frontmatter = ${JSON.stringify(frontmatter)}`

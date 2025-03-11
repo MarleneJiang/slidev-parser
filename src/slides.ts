@@ -16,7 +16,7 @@ export interface Islide extends SlideRoute {
 }
 
 export class SlideRenderer {
-  private slidesInfo: SlideInfo[] = []
+  // private slidesInfo: SlideInfo[] = []
   private options: RendererOptions = {}
   private unoGenerator: UnoGenerator
   private SlideLoading = SlideLoading
@@ -92,18 +92,17 @@ export class SlideRenderer {
 
   async render(slidesSource: SlideSource[]): Promise<Islide[]> {
     await this.unoGenerator.init()
-    this.slidesInfo = this.getSlidesInfo(slidesSource)
+    const currentSlidesInfo = this.getSlidesInfo(slidesSource)
 
-    return this.slidesInfo.map((s, i) => {
+    return currentSlidesInfo.map((s, i) => {
       const no = i + 1
       let loaded: any
 
       const loader = async () => {
         if (loaded)
           return loaded
-
         const { js, errors } = await compileMd({
-          slidesInfo: this.slidesInfo,
+          slidesInfo: currentSlidesInfo,
           filename: s.source.filepath,
           code: s.source.content,
           mdOptions: this.options.mdOptions,
