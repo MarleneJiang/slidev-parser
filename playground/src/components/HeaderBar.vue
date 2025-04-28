@@ -4,7 +4,7 @@ import { compressToEncodedURIComponent as encode } from 'lz-string'
 import { ref } from 'vue'
 import { useMultiStepBuilding } from '../composables/build'
 import { toggleDark } from '../composables/dark'
-import { supabase } from '../composables/supabase'
+// import { supabase } from '../composables/supabase'
 import { inputMDC, STORAGE_KEY } from '../composables/url'
 import MultiStepLoader from './MultiStepLoader.vue'
 // 接收 paneSize 的 props，并定义切换事件
@@ -18,11 +18,11 @@ defineProps({
 const emit = defineEmits(['toggleSize'])
 
 const { copy, copied } = useClipboard()
-const showLoginModal = ref(false)
+// const showLoginModal = ref(false)
 const showFileNameModal = ref(false) // 新增：控制文件名输入弹窗显示
 const slidesFileName = ref('') // 新增：存储用户输入的文件名
 const slidesAspectRatio = ref('16/9') // 新增：存储用户选择的尺寸比例
-const isLoading = ref(false)
+// const isLoading = ref(false)
 const showCompletionModal = ref(false) // 新增：控制构建完成弹窗显示
 const { buildingState, loadingSteps, handleStateChange, startSlidesBuilding, slidesUrl } = useMultiStepBuilding()
 
@@ -38,55 +38,55 @@ function handleReset() {
   }
 }
 
-async function loginWithGitHub() {
-  try {
-    isLoading.value = true
+// async function loginWithGitHub() {
+//   try {
+//     isLoading.value = true
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'github',
-      options: {
-        redirectTo: window.location.origin,
-      },
-    })
+//     const { error } = await supabase.auth.signInWithOAuth({
+//       provider: 'github',
+//       options: {
+//         redirectTo: window.location.origin,
+//       },
+//     })
 
-    if (error) {
-      throw error
-    }
-    else {
-      // save searchParams to redirect back after login
-      localStorage.setItem(STORAGE_KEY, window.location.hash.slice(1))
-    }
-  }
-  catch (error) {
-    console.error('GitHub登录错误:', error)
-  }
-  finally {
-    isLoading.value = false
-  }
-}
+//     if (error) {
+//       throw error
+//     }
+//     else {
+//       // save searchParams to redirect back after login
+//       localStorage.setItem(STORAGE_KEY, window.location.hash.slice(1))
+//     }
+//   }
+//   catch (error) {
+//     console.error('GitHub登录错误:', error)
+//   }
+//   finally {
+//     isLoading.value = false
+//   }
+// }
 
 async function handleStartBuilding() {
   // 检查用户是否已登录
-  const { data: { session } } = await supabase.auth.getSession()
+  // const { data: { session } } = await supabase.auth.getSession()
 
-  if (session?.user) {
-    // 用户已登录，显示文件名输入弹窗
-    showFileNameModal.value = true
-  }
-  else {
-    // 用户未登录，显示登录提示
-    showLoginModal.value = true
-  }
+  // if (session?.user) {
+  // 用户已登录，显示文件名输入弹窗
+  showFileNameModal.value = true
+  // }
+  // else {
+  //   // 用户未登录，显示登录提示
+  //   showLoginModal.value = true
+  // }
 }
 
 // 新增：处理确认构建按钮点击
 async function handleConfirmBuild() {
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session?.user) {
-    showFileNameModal.value = false
-    showLoginModal.value = true
-    return
-  }
+  // const { data: { session } } = await supabase.auth.getSession()
+  // if (!session?.user) {
+  //   showFileNameModal.value = false
+  //   showLoginModal.value = true
+  //   return
+  // }
   if (slidesFileName.value.trim()) {
     // 关闭弹窗
     showFileNameModal.value = false
@@ -99,7 +99,7 @@ async function handleConfirmBuild() {
       : encode(inputMDC.value)
 
     // Get username with fallback
-    const userName = session.user.user_metadata?.user_name || session.user.email || 'user'
+    const userName = 'user'// session.user.user_metadata?.user_name || session.user.email || 'user'
 
     // Execute build with sanitized filename and aspect ratio
     await startSlidesBuilding(
@@ -186,7 +186,7 @@ function copyBuildLink() {
     </div>
 
     <!-- 登录提示弹窗 -->
-    <div v-if="showLoginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <!-- <div v-if="showLoginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white dark:bg-gray/10 p-6 rounded-lg shadow-lg max-w-sm w-full backdrop-blur-2xl">
         <h3 class="text-lg font-bold mb-4">
           需要登录
@@ -213,7 +213,7 @@ function copyBuildLink() {
           </button>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- 新增：文件名输入弹窗 -->
     <div v-if="showFileNameModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
