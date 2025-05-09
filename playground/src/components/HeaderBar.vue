@@ -18,14 +18,12 @@ defineProps({
 const emit = defineEmits(['toggleSize'])
 
 const { copy, copied } = useClipboard()
-// const showLoginModal = ref(false)
-const showFileNameModal = ref(false) // 控制文件名输入弹窗显示
+const showSlidesSettingsModal = ref(false) // 控制幻灯片设置弹窗显示
 const slidesFileName = ref('') // 存储用户输入的文件名
 const slidesAspectRatio = ref('16/9') // 存储用户选择的尺寸比例
 const slidesColorSchema = ref('light') // 新增：存储用户选择的颜色主题
-// const isLoading = ref(false)
 const showCompletionModal = ref(false) // 控制构建完成弹窗显示
-const { buildingState, loadingSteps, handleStateChange, startSlidesBuilding, slidesUrl } = useMultiStepBuilding()
+const { buildingState, loadingSteps, handleStateChange, startSlidesBuilding, slidesUrl, errorMessage } = useMultiStepBuilding()
 
 function handleShare() {
   const url = new URL(window.location.href)
@@ -39,77 +37,41 @@ function handleReset() {
   }
 }
 
-// async function loginWithGitHub() {
-//   try {
-//     isLoading.value = true
-
-//     const { error } = await supabase.auth.signInWithOAuth({
-//       provider: 'github',
-//       options: {
-//         redirectTo: window.location.origin,
-//       },
-//     })
-
-//     if (error) {
-//       throw error
-//     }
-//     else {
-//       // save searchParams to redirect back after login
-//       localStorage.setItem(STORAGE_KEY, window.location.hash.slice(1))
-//     }
-//   }
-//   catch (error) {
-//     console.error('GitHub登录错误:', error)
-//   }
-//   finally {
-//     isLoading.value = false
-//   }
-// }
-
-async function handleStartBuilding() {
-  // 检查用户是否已登录
-  // const { data: { session } } = await supabase.auth.getSession()
-
-  // if (session?.user) {
-  // 用户已登录，显示文件名输入弹窗
-  showFileNameModal.value = true
-  // }
-  // else {
-  //   // 用户未登录，显示登录提示
-  //   showLoginModal.value = true
-  // }
+// 打开幻灯片设置弹窗
+function handleStartBuilding() {
+  showSlidesSettingsModal.value = true
 }
 
-// 处理确认构建按钮点击
+// 处理确认构建
 async function handleConfirmBuild() {
-  // const { data: { session } } = await supabase.auth.getSession()
-  // if (!session?.user) {
-  //   showFileNameModal.value = false
-  //   showLoginModal.value = true
-  //   return
-  // }
-  if (slidesFileName.value.trim()) {
-    // 关闭弹窗
-    showFileNameModal.value = false
-    // Define the Markdown front matter pattern
-    const frontMatterPattern = '---\nlayout: intro\n---\n'
+  if (!slidesFileName.value.trim())
+    return
 
-    // Process the Markdown content
-    const mdc = inputMDC.value.startsWith(frontMatterPattern)
-      ? encode(inputMDC.value.slice(frontMatterPattern.length))
-      : encode(inputMDC.value)
+  // 关闭弹窗
+  showSlidesSettingsModal.value = false
 
-    // Get username with fallback
-    const userName = 'user'// session.user.user_metadata?.user_name || session.user.email || 'user'
+  // 处理Markdown内容
+  const frontMatterPattern = '---\nlayout: intro\n---\n'
+  const mdc = inputMDC.value.startsWith(frontMatterPattern)
+    ? encode(inputMDC.value.slice(frontMatterPattern.length))
+    : encode(inputMDC.value)
 
-    // Execute build with sanitized filename and aspect ratio
+  try {
+    // 执行构建
     await startSlidesBuilding(
       slidesFileName.value.trim(),
       mdc,
-      userName,
+      'user', // 简化用户标识
       slidesAspectRatio.value,
-      slidesColorSchema.value, // 新增：传递颜色主题参数
+      slidesColorSchema.value,
     )
+  }
+  catch (error) {
+    console.error('Failed to build slides:', error)
+    // Optionally, show an error message to the user
+    // For example, by setting another ref and displaying it in the UI
+    // eslint-disable-next-line no-alert
+    alert(`构建失败，请查看控制台获取更多信息。\n${errorMessage.value}`)
   }
 }
 
@@ -124,7 +86,6 @@ function handleComplete() {
 function openInNewTab() {
   if (slidesUrl.value) {
     window.open(slidesUrl.value, '_blank')
-    // showCompletionModal.value = false
   }
 }
 
@@ -132,10 +93,6 @@ function openInNewTab() {
 function copyBuildLink() {
   if (slidesUrl.value) {
     copy(slidesUrl.value)
-    // 短暂延迟后关闭弹窗
-    // setTimeout(() => {
-    //   showCompletionModal.value = false
-    // }, 1500)
   }
 }
 </script>
@@ -187,41 +144,11 @@ function copyBuildLink() {
       />
     </div>
 
-    <!-- 登录提示弹窗 -->
-    <!-- <div v-if="showLoginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <!-- 幻灯片设置弹窗 -->
+    <div v-if="showSlidesSettingsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white dark:bg-gray/10 p-6 rounded-lg shadow-lg max-w-sm w-full backdrop-blur-2xl">
         <h3 class="text-lg font-bold mb-4">
-          需要登录
-        </h3>
-        <p class="mb-6">
-          请使用GitHub账号登录后继续下载操作。
-        </p>
-        <div class="flex justify-end gap-3">
-          <button
-            class="px-4 py-2 rounded bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray/10"
-            @click="showLoginModal = false"
-          >
-            取消
-          </button>
-          <button
-            class="px-4 py-2 rounded bg-blue-500 text-white flex items-center gap-2 hover:bg-blue-600"
-            :disabled="isLoading"
-            @click="loginWithGitHub"
-          >
-            <div v-if="isLoading" class="i-svg-spinners-3-dots-fade w-4 h-4" />
-            <div flex items-center gap-1>
-              <div i-ri-github-line />登录
-            </div>
-          </button>
-        </div>
-      </div>
-    </div> -->
-
-    <!-- 文件名输入弹窗 -->
-    <div v-if="showFileNameModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white dark:bg-gray/10 p-6 rounded-lg shadow-lg max-w-sm w-full backdrop-blur-2xl">
-        <h3 class="text-lg font-bold mb-4">
-          输入Slides设置
+          幻灯片设置
         </h3>
         <div class="mb-4">
           <label class="block text-sm font-medium mb-1">文件名</label>
@@ -267,7 +194,7 @@ function copyBuildLink() {
           </div>
         </div>
 
-        <!-- 新增：颜色主题选择 -->
+        <!-- 颜色主题选择 -->
         <div class="mb-4">
           <label class="block text-sm font-medium mb-2">主题颜色</label>
           <div class="flex gap-4">
@@ -299,7 +226,7 @@ function copyBuildLink() {
         <div class="flex justify-end gap-3">
           <button
             class="px-4 py-2 rounded bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray/10"
-            @click="showFileNameModal = false"
+            @click="showSlidesSettingsModal = false"
           >
             取消
           </button>
@@ -314,7 +241,7 @@ function copyBuildLink() {
       </div>
     </div>
 
-    <!-- 新增：构建完成弹窗 -->
+    <!-- 构建完成弹窗 -->
     <div v-if="showCompletionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white dark:bg-gray/10 p-6 rounded-lg shadow-lg max-w-md w-full backdrop-blur-2xl">
         <h3 class="text-lg font-bold mb-4">

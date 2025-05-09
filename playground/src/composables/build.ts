@@ -2,65 +2,130 @@
 import { decompressFromEncodedURIComponent as decode, compressToEncodedURIComponent as encode } from 'lz-string'
 import { computed, reactive, ref } from 'vue'
 
+// Constants for API and workflow
+const API_BASE_URL = 'https://slidefly.idealeap.cn/api'
+const TRIGGER_WORKFLOW_ENDPOINT = `${API_BASE_URL}/trigger-workflow`
+const WORKFLOW_STATUS_ENDPOINT_PREFIX = `${API_BASE_URL}/workflow-status`
+
+const WORKFLOW_MAX_ATTEMPTS = 60
+const WORKFLOW_INITIAL_INTERVAL = 2000 // ms
+const WORKFLOW_MAX_INTERVAL = 30000 // ms
+
+const WORKFLOW_STATUS_COMPLETED = 'completed'
+const WORKFLOW_STATUS_FAILED = 'failed'
+const WORKFLOW_STATUS_CANCELLED = 'cancelled'
+const WORKFLOW_STATUS_TIMED_OUT = 'timed_out'
+
 interface Step {
-  text: string // Display text for the step
-  afterText?: string // Text to show after step completion
-  async?: boolean // If true, waits for external trigger to proceed
-  duration?: number // Duration in ms before proceeding (default: 2000)
-  action?: () => void // Function to execute when step is active
+  text: string
+  afterText?: string
+  async?: boolean
+  duration?: number
+  action?: () => void | Promise<void>
 }
+
+export type AspectRatio = '16/9' | '4/3' | '1/1' | string
+export type ColorSchema = 'light' | 'dark' | string
+
+interface WorkflowInput {
+  environment: string
+  version?: string // User identifier or version
+  content?: string // Encoded Markdown content
+  title?: string // Slides file name
+  args?: string // Encoded JSON string of additional arguments like aspectRatio, colorSchema
+}
+
+interface TriggerWorkflowPayload {
+  ref: string
+  inputs: WorkflowInput
+}
+
+interface TriggerWorkflowResponse {
+  request_id: string
+  run_id: string
+}
+
+interface WorkflowStatusResponse {
+  status: string | null
+}
+
 export function useMultiStepBuilding() {
   const requestId = ref('')
   const runId = ref('')
   const slidesUrl = ref('')
-  // State management
+  const errorMessage = ref<string | null>(null) // For user-facing error messages
+
   const loaderStates = reactive({
-    triggerWorkflow: false,
-    isBuilding: false,
+    isTriggeringWorkflow: false,
+    isBuildingSlides: false,
   })
+
   const buildingState = reactive({
     showSteps: false,
     close: () => {
       buildingState.showSteps = false
+      errorMessage.value = null // Clear errors when closing
     },
   })
+
   const loadingSteps = computed<Step[]>(() => [
     {
-      text: 'Trigger Workflow',
-      async: loaderStates.triggerWorkflow,
-      afterText: `workflow(ID:${runId.value}) triggered`,
+      text: 'Triggering Workflow...',
+      async: loaderStates.isTriggeringWorkflow,
+      afterText: runId.value ? `Workflow (ID: ${runId.value}) triggered.` : 'Workflow triggered.',
     },
     {
-      text: 'Build Slides Website',
-      async: loaderStates.isBuilding,
-      afterText: `slides(ID:${requestId.value}) built`,
+      text: 'Building Slides Website...',
+      async: loaderStates.isBuildingSlides,
+      afterText: requestId.value ? `Slides (ID: ${requestId.value}) built.` : 'Slides built.',
     },
     {
-      text: 'Redirecting',
+      text: 'Redirecting...',
       duration: 1000,
       action: handleBuildingComplete,
     },
   ])
 
-  // Event handlers
+  // Placeholder - can be implemented if specific state change reactions are needed
   function handleStateChange(state: number) {
-  // Handle Loading State Change
+    // console.log('Loading step state changed:', state)
   }
 
+  // Placeholder - can be implemented if specific actions on completion are needed
   function handleComplete() {
-  // Handle Loading Complete
+    // console.log('All loading steps completed')
   }
+
   function handleBuildingComplete() {
     buildingState.close()
-    const url = `https://talks.idealeap.cn/playground/${requestId.value}`
-    slidesUrl.value = url
+    if (requestId.value) {
+      slidesUrl.value = `https://talks.idealeap.cn/playground/${requestId.value}`
+    }
   }
 
-  async function triggerWorkflow(name?: string, mdc?: string, user?: string, aspectRatio?: string, colorSchema?: string) {
-    const myHeaders = new Headers()
-    myHeaders.append('Content-Type', 'application/json')
+  async function _fetchApi<T>(url: string, options?: RequestInit, errorContext?: string): Promise<T> {
+    try {
+      const response = await fetch(url, options)
+      if (!response.ok) {
+        const errorData = await response.text()
+        throw new Error(`API Error ${response.status}: ${errorData || response.statusText} (Context: ${errorContext || 'General API call'})`)
+      }
+      return await response.json() as T
+    }
+    catch (error) {
+      console.error(`Fetch API error (${errorContext || 'General API call'}):`, error)
+      throw error // Re-throw to be caught by the caller
+    }
+  }
 
-    const raw = JSON.stringify({
+  async function triggerWorkflow(
+    name?: string,
+    mdc?: string,
+    user?: string,
+    aspectRatio?: AspectRatio,
+    colorSchema?: ColorSchema,
+  ): Promise<void> {
+    const payload: TriggerWorkflowPayload = {
       ref: 'main',
       inputs: {
         environment: 'playground',
@@ -69,108 +134,130 @@ export function useMultiStepBuilding() {
         title: name,
         args: encode(JSON.stringify({ aspectRatio, colorSchema })),
       },
-    })
+    }
 
-    const requestOptions = {
+    const requestOptions: RequestInit = {
       method: 'POST',
-      headers: myHeaders,
-      body: raw,
-    }
-
-    const res = await fetch('https://slidefly.idealeap.cn/api/trigger-workflow', requestOptions)
-    if (!res.ok) {
-      throw new Error('Failed to trigger workflow')
-      return
-    }
-    const data = await res.json()
-    if (!data.request_id || !data.run_id) {
-      throw new Error('Failed to trigger workflow')
-      return
-    }
-    requestId.value = data.request_id
-    runId.value = data.run_id
-    loaderStates.triggerWorkflow = false
-  }
-
-  async function checkWorkflowStatus(runId: string) {
-    const MAX_ATTEMPTS = 60 // Maximum number of polling attempts
-    const INITIAL_INTERVAL = 2000 // Start with 2 second interval
-    const MAX_INTERVAL = 30000 // Maximum 30 second interval
-
-    // Status check with exponential backoff
-    let attempts = 0
-    let interval = INITIAL_INTERVAL
-
-    const getStatus = async () => {
-      try {
-        const res = await fetch(`https://slidefly.idealeap.cn/api/workflow-status/${runId}`, {
-          method: 'GET',
-          headers: { Accept: 'application/json' },
-        })
-
-        if (!res.ok) {
-          throw new Error(`API error: ${res.status}`)
-        }
-
-        const data = await res.json()
-        return data?.status || null
-      }
-      catch (error) {
-        console.error('Status check failed:', error)
-        return null
-      }
-    }
-
-    while (attempts < MAX_ATTEMPTS) {
-      const status = await getStatus()
-
-      // Handle different status types
-      if (status === 'completed') {
-        loaderStates.isBuilding = false
-        return
-      }
-      else if (['failed', 'cancelled', 'timed_out'].includes(status)) {
-        throw new Error(`Workflow ${status}`)
-      }
-
-      // Wait before next attempt with exponential backoff
-      await new Promise(resolve => setTimeout(resolve, interval))
-      interval = Math.min(interval * 1.5, MAX_INTERVAL) // Exponential backoff
-      attempts++
-    }
-
-    throw new Error('Workflow status check timed out')
-  }
-
-  async function startSlidesBuilding(name?: string, mdc?: string, user?: string, aspectRatio?: string, colorSchema?: string) {
-  // Reset states
-    buildingState.showSteps = true
-    loaderStates.triggerWorkflow = true
-    loaderStates.isBuilding = true
-    requestId.value = ''
-    runId.value = ''
-    slidesUrl.value = ''
-
-    // Simulate async operations
-    async function simulateAsyncStep(stateProp: keyof typeof loaderStates) {
-      if (stateProp === 'triggerWorkflow') {
-        await triggerWorkflow(name, mdc, user, aspectRatio, colorSchema)
-      }
-      else if (stateProp === 'isBuilding') {
-        await checkWorkflowStatus(runId.value)
-      }
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     }
 
     try {
-    // Trigger workflow
-      await simulateAsyncStep('triggerWorkflow')
-
-      // Build slides
-      await simulateAsyncStep('isBuilding')
+      const data = await _fetchApi<TriggerWorkflowResponse>(TRIGGER_WORKFLOW_ENDPOINT, requestOptions, 'Trigger Workflow')
+      if (!data.request_id || !data.run_id) {
+        throw new Error('Invalid response from trigger workflow API: missing request_id or run_id')
+      }
+      requestId.value = data.request_id
+      runId.value = data.run_id
+      loaderStates.isTriggeringWorkflow = false
     }
     catch (error) {
-      buildingState.close()
+      errorMessage.value = error instanceof Error ? error.message : 'Failed to trigger workflow.'
+      throw error // Propagate error to stop the building process
     }
   }
-  return { loaderStates, buildingState, loadingSteps, handleStateChange, handleComplete, handleBuildingComplete, startSlidesBuilding, slidesUrl }
+
+  async function checkWorkflowStatus(currentRunId: string): Promise<void> {
+    let attempts = 0
+    let interval = WORKFLOW_INITIAL_INTERVAL
+
+    while (attempts < WORKFLOW_MAX_ATTEMPTS) {
+      try {
+        const data = await _fetchApi<WorkflowStatusResponse>(
+          `${WORKFLOW_STATUS_ENDPOINT_PREFIX}/${currentRunId}`,
+          { method: 'GET', headers: { Accept: 'application/json' } },
+          `Check Workflow Status (Attempt: ${attempts + 1})`,
+        )
+
+        const status = data?.status
+
+        if (status === WORKFLOW_STATUS_COMPLETED) {
+          loaderStates.isBuildingSlides = false
+          return // Successfully completed
+        }
+        else if (
+          status === WORKFLOW_STATUS_FAILED
+          || status === WORKFLOW_STATUS_CANCELLED
+          || status === WORKFLOW_STATUS_TIMED_OUT
+        ) {
+          throw new Error(`Workflow ${status}. Run ID: ${currentRunId}`)
+        }
+        // Otherwise, status is pending or unknown, continue polling
+      }
+      catch (error) {
+        // If a specific workflow failure status was thrown, propagate it
+        if (error instanceof Error && (error.message.includes(WORKFLOW_STATUS_FAILED) || error.message.includes(WORKFLOW_STATUS_CANCELLED) || error.message.includes(WORKFLOW_STATUS_TIMED_OUT))) {
+          errorMessage.value = error.message
+          throw error
+        }
+        // For other errors (e.g., network issues during polling), log and continue polling up to MAX_ATTEMPTS
+        console.warn(`Workflow status check attempt ${attempts + 1} failed:`, error)
+        // Do not set errorMessage.value here for transient polling errors, only for terminal workflow states.
+      }
+
+      await new Promise(resolve => setTimeout(resolve, interval))
+      interval = Math.min(interval * 1.5, WORKFLOW_MAX_INTERVAL)
+      attempts++
+    }
+
+    const timeoutMessage = `Workflow status check timed out after ${attempts} attempts. Run ID: ${currentRunId}`
+    errorMessage.value = timeoutMessage
+    throw new Error(timeoutMessage)
+  }
+
+  async function startSlidesBuilding(
+    name?: string,
+    mdc?: string,
+    user?: string,
+    aspectRatio?: AspectRatio,
+    colorSchema?: ColorSchema,
+  ): Promise<void> {
+    // Reset states
+    buildingState.showSteps = true
+    loaderStates.isTriggeringWorkflow = true
+    loaderStates.isBuildingSlides = true
+    requestId.value = ''
+    runId.value = ''
+    slidesUrl.value = ''
+    errorMessage.value = null
+
+    try {
+      // Trigger workflow
+      await triggerWorkflow(name, mdc, user, aspectRatio, colorSchema)
+      loaderStates.isTriggeringWorkflow = false
+
+      // Build slides by checking workflow status
+      if (runId.value) {
+        await checkWorkflowStatus(runId.value)
+      }
+      else {
+        // This case should ideally not be reached if triggerWorkflow throws on failure
+        throw new Error('Cannot check workflow status: Run ID is not available.')
+      }
+      loaderStates.isBuildingSlides = false
+    }
+    catch (error) {
+      // Error message is already set by triggerWorkflow or checkWorkflowStatus
+      // or set a generic one if not already set.
+      if (!errorMessage.value) {
+        errorMessage.value = error instanceof Error ? error.message : 'An unexpected error occurred during the build process.'
+      }
+      console.error('Slides building process failed:', error)
+      buildingState.close() // Close the loader on error
+      // Re-throw so the caller (e.g., Vue component) can also handle it if needed
+      throw error
+    }
+  }
+
+  return {
+    loaderStates,
+    buildingState,
+    loadingSteps,
+    handleStateChange,
+    handleComplete,
+    // handleBuildingComplete, // Not typically called directly from outside
+    startSlidesBuilding,
+    slidesUrl,
+    errorMessage, // Expose error message to the UI
+  }
 }
