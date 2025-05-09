@@ -19,11 +19,12 @@ const emit = defineEmits(['toggleSize'])
 
 const { copy, copied } = useClipboard()
 // const showLoginModal = ref(false)
-const showFileNameModal = ref(false) // 新增：控制文件名输入弹窗显示
-const slidesFileName = ref('') // 新增：存储用户输入的文件名
-const slidesAspectRatio = ref('16/9') // 新增：存储用户选择的尺寸比例
+const showFileNameModal = ref(false) // 控制文件名输入弹窗显示
+const slidesFileName = ref('') // 存储用户输入的文件名
+const slidesAspectRatio = ref('16/9') // 存储用户选择的尺寸比例
+const slidesColorSchema = ref('light') // 新增：存储用户选择的颜色主题
 // const isLoading = ref(false)
-const showCompletionModal = ref(false) // 新增：控制构建完成弹窗显示
+const showCompletionModal = ref(false) // 控制构建完成弹窗显示
 const { buildingState, loadingSteps, handleStateChange, startSlidesBuilding, slidesUrl } = useMultiStepBuilding()
 
 function handleShare() {
@@ -79,7 +80,7 @@ async function handleStartBuilding() {
   // }
 }
 
-// 新增：处理确认构建按钮点击
+// 处理确认构建按钮点击
 async function handleConfirmBuild() {
   // const { data: { session } } = await supabase.auth.getSession()
   // if (!session?.user) {
@@ -106,7 +107,8 @@ async function handleConfirmBuild() {
       slidesFileName.value.trim(),
       mdc,
       userName,
-      slidesAspectRatio.value, // 新增：传递尺寸参数
+      slidesAspectRatio.value,
+      slidesColorSchema.value, // 新增：传递颜色主题参数
     )
   }
 }
@@ -215,7 +217,7 @@ function copyBuildLink() {
       </div>
     </div> -->
 
-    <!-- 新增：文件名输入弹窗 -->
+    <!-- 文件名输入弹窗 -->
     <div v-if="showFileNameModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white dark:bg-gray/10 p-6 rounded-lg shadow-lg max-w-sm w-full backdrop-blur-2xl">
         <h3 class="text-lg font-bold mb-4">
@@ -231,7 +233,7 @@ function copyBuildLink() {
           >
         </div>
 
-        <!-- 新增：尺寸选择 -->
+        <!-- 尺寸选择 -->
         <div class="mb-4">
           <label class="block text-sm font-medium mb-2">幻灯片尺寸</label>
           <div class="flex flex-wrap gap-3">
@@ -261,6 +263,35 @@ function copyBuildLink() {
                 class="mr-1"
               >
               <span>1:1 (方形)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 新增：颜色主题选择 -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-2">主题颜色</label>
+          <div class="flex gap-4">
+            <label class="inline-flex items-center cursor-pointer">
+              <input
+                v-model="slidesColorSchema"
+                type="radio"
+                value="light"
+                class="mr-1"
+              >
+              <span class="flex items-center">
+                <div class="i-ri-sun-line mr-1" /> 浅色
+              </span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+              <input
+                v-model="slidesColorSchema"
+                type="radio"
+                value="dark"
+                class="mr-1"
+              >
+              <span class="flex items-center">
+                <div class="i-ri-moon-line mr-1" /> 深色
+              </span>
             </label>
           </div>
         </div>

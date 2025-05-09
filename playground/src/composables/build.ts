@@ -56,7 +56,7 @@ export function useMultiStepBuilding() {
     slidesUrl.value = url
   }
 
-  async function triggerWorkflow(name?: string, mdc?: string, user?: string, aspectRatio?: string) {
+  async function triggerWorkflow(name?: string, mdc?: string, user?: string, aspectRatio?: string, colorSchema?: string) {
     const myHeaders = new Headers()
     myHeaders.append('Content-Type', 'application/json')
 
@@ -67,7 +67,7 @@ export function useMultiStepBuilding() {
         version: user,
         content: mdc,
         title: name,
-        args: encode(JSON.stringify({ aspectRatio })),
+        args: encode(JSON.stringify({ aspectRatio, colorSchema })),
       },
     })
 
@@ -142,7 +142,7 @@ export function useMultiStepBuilding() {
     throw new Error('Workflow status check timed out')
   }
 
-  async function startSlidesBuilding(name?: string, mdc?: string, user?: string, aspectRatio?: string) {
+  async function startSlidesBuilding(name?: string, mdc?: string, user?: string, aspectRatio?: string, colorSchema?: string) {
   // Reset states
     buildingState.showSteps = true
     loaderStates.triggerWorkflow = true
@@ -154,7 +154,7 @@ export function useMultiStepBuilding() {
     // Simulate async operations
     async function simulateAsyncStep(stateProp: keyof typeof loaderStates) {
       if (stateProp === 'triggerWorkflow') {
-        await triggerWorkflow(name, mdc, user, aspectRatio)
+        await triggerWorkflow(name, mdc, user, aspectRatio, colorSchema)
       }
       else if (stateProp === 'isBuilding') {
         await checkWorkflowStatus(runId.value)
