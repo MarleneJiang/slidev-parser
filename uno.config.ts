@@ -27,7 +27,7 @@ export default defineConfig({
     presetWebFonts({
       fonts: {
         mono: 'Fira Code',
-        sans: 'Avenir Next,Nunito Sans',
+        sans: ['Avenir Next', 'Nunito Sans'],
         local: 'Avenir Next',
       },
       processors: createLocalFontProcessor(),
