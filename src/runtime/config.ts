@@ -20,23 +20,36 @@ export async function evaluateUserConfig<U = UserConfig>(
   modulesCache: ModuleCache = globalCache,
 ): Promise<U | undefined> {
   const code = configStr
-    .replace(/import\s(.*?)\sfrom\s*(['"])unocss\2/g, 'const $1 = await __import("unocss");')
-    .replace(/import\s*(\{[\s\S]*?\})\s*from\s*(['"])([\w@/-]+)\2/g, 'const $1 = await __import("$3");')
-    .replace(/import\s(.*?)\sfrom\s*(['"])([\w@/-]+)\2/g, 'const $1 = (await __import("$3")).default;')
+    .replace(
+      /import\s(.*?)\sfrom\s*(['"])unocss\2/g,
+      'const $1 = await __import("unocss");',
+    )
+    .replace(
+      /import\s*(\{[\s\S]*?\})\s*from\s*(['"])([\w@/-]+)\2/g,
+      'const $1 = await __import("$3");',
+    )
+    .replace(
+      /import\s(.*?)\sfrom\s*(['"])([\w@/-]+)\2/g,
+      'const $1 = (await __import("$3")).default;',
+    )
     .replace(/export default /, 'return ')
     .replace(/\bimport\s*\(/, '__import(')
 
   // bypass vite interop
   // eslint-disable-next-line no-new-func
   const _import = new Function('a', 'return import(a);')
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   const __import = (name: string): any => {
     if (!modulesCache.has(name)) {
       modulesCache.set(
         name,
         moduleMap.has(name)
-          ? moduleMap.get(name)!()
+          ? moduleMap.get(name)?.()
           : name.endsWith('.json')
-            ? $fetch(CDN_BASE + name, { responseType: 'json' }).then((r: any) => ({ default: r }))
+            ? $fetch(CDN_BASE + name, { responseType: 'json' }).then(
+              // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+              (r: any) => ({ default: r }),
+            )
             : _import(CDN_BASE + name),
       )
     }

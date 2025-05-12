@@ -1,17 +1,26 @@
 import type { ExportSpecifier, Identifier, Node } from '@babel/types'
 import MagicString from 'magic-string'
 import { basename, dirname, resolve } from 'pathe'
-import { babelParse, extractIdentifiers, isInDestructureAssignment, isStaticProperty, walk, walkIdentifiers } from 'vue/compiler-sfc'
+import {
+  babelParse,
+  extractIdentifiers,
+  isInDestructureAssignment,
+  isStaticProperty,
+  walk,
+  walkIdentifiers,
+} from 'vue/compiler-sfc'
 // Ported from https://github.com/vuejs/repl/blob/main/src/output/moduleCompiler.ts
 import { moduleLoaders, resolveCustomComponent } from './moduleLoad'
 
-const importKey = `__import__`
-const exportKey = `__export__`
-const moduleKey = `__module__`
+const importKey = '__import__'
+const exportKey = '__export__'
+const moduleKey = '__module__'
 
 // Similar to `Function`, but async
-const AsyncFunction: any = async function () {}.constructor
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+const AsyncFunction: any = (async () => {}).constructor
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export function evalJs(src: string, filepath: string): () => Promise<any> {
   delete moduleLoaders[filepath]
 
@@ -19,48 +28,50 @@ export function evalJs(src: string, filepath: string): () => Promise<any> {
   const filename = basename(filepath)
   const { code } = processModule(src, filename)
   const fn = new AsyncFunction(importKey, exportKey, code)
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   let loaded: any
-  return moduleLoaders[filepath] = () => loaded ??= fn(
-    async (specifier: string) => {
-      // TODO: assets
+  return (moduleLoaders[filepath] = () =>
+    (loaded ??= fn(
+      async (specifier: string) => {
+        // TODO: assets
 
-      // File
-      if ('./'.includes(specifier[0])) {
-        const path = resolve(filedir, specifier)
-        const possibleFiles = [
-          path,
-          `${path}.ts`,
-          `${path}.js`,
-          path.replace(/.ts$/, '.js'),
-          path.replace(/.js$/, '.ts'),
-        ]
-        for (const path of possibleFiles) {
-          if (moduleLoaders[path]) {
-            return moduleLoaders[path]()
+        // File
+        if ('./'.includes(specifier[0])) {
+          const path = resolve(filedir, specifier)
+          const possibleFiles = [
+            path,
+            `${path}.ts`,
+            `${path}.js`,
+            path.replace(/.ts$/, '.js'),
+            path.replace(/.js$/, '.ts'),
+          ]
+          for (const path of possibleFiles) {
+            if (moduleLoaders[path]) {
+              return moduleLoaders[path]()
+            }
           }
         }
-      }
 
-      // 尝试解析自定义组件
-      const customComponent = resolveCustomComponent(specifier)
-      if (customComponent)
-        return customComponent
+        // 尝试解析自定义组件
+        const customComponent = resolveCustomComponent(specifier)
+        if (customComponent)
+          return customComponent
 
-      // Special module
-      if (moduleLoaders[specifier]) {
-        return moduleLoaders[specifier]()
-      }
+        // Special module
+        if (moduleLoaders[specifier]) {
+          return moduleLoaders[specifier]()
+        }
 
-      throw new Error(`Failed to resolve module: ${specifier}`)
-    },
-    (mod: any, key: string, get: () => any) => {
-      Object.defineProperty(mod, key, {
-        enumerable: true,
-        configurable: true,
-        get,
-      })
-    },
-  )
+        throw new Error(`Failed to resolve module: ${specifier}`)
+      },
+      (mod: any, key: string, get: () => any) => {
+        Object.defineProperty(mod, key, {
+          enumerable: true,
+          configurable: true,
+          get,
+        })
+      },
+    )))
 }
 
 function processModule(src: string, filename: string) {
@@ -95,9 +106,7 @@ function processModule(src: string, filename: string) {
   }
 
   // 0. instantiate module
-  s.prepend(
-    `const ${moduleKey} = { [Symbol.toStringTag]: "Module" }\n\n`,
-  )
+  s.prepend(`const ${moduleKey} = { [Symbol.toStringTag]: "Module" }\n\n`)
 
   // 1. check all import statements and record id -> importName map
   for (const node of ast) {
