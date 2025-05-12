@@ -24,15 +24,21 @@ interface Step {
   action?: () => void | Promise<void>
 }
 
-export type AspectRatio = '16/9' | '4/3' | '1/1' | string
-export type ColorSchema = 'light' | 'dark' | string
+export type AspectRatio = '16/9' | '4/3' | '1/1'
+export type ColorSchema = 'light' | 'dark'
+
+interface WorkflowInputArgs {
+  aspectRatio?: AspectRatio
+  colorSchema?: ColorSchema
+}
 
 interface WorkflowInput {
   environment: string
   version?: string // User identifier or version
   content?: string // Encoded Markdown content
   title?: string // Slides file name
-  args?: string // Encoded JSON string of additional arguments like aspectRatio, colorSchema
+  args?: string // Encoded JSON string of WorkflowInputArgs
+  type?: 'web' | 'pptx' // Export type
 }
 
 interface TriggerWorkflowPayload {
@@ -47,13 +53,24 @@ interface TriggerWorkflowResponse {
 
 interface WorkflowStatusResponse {
   status: string | null
+  conclusion?: string
+}
+
+export interface BuildSlidesOptions {
+  name?: string
+  mdc?: string
+  user?: string
+  aspectRatio?: AspectRatio
+  colorSchema?: ColorSchema
+  type?: 'web' | 'pptx' // Export type
 }
 
 export function useMultiStepBuilding() {
   const requestId = ref('')
   const runId = ref('')
   const slidesUrl = ref('')
-  const errorMessage = ref<string | null>(null) // For user-facing error messages
+  const errorMessage = ref<string | null>(null)
+  const currentExportType = ref<'web' | 'pptx'>('web') // Added to store current export type
 
   const loaderStates = reactive({
     isTriggeringWorkflow: false,
@@ -64,7 +81,7 @@ export function useMultiStepBuilding() {
     showSteps: false,
     close: () => {
       buildingState.showSteps = false
-      errorMessage.value = null // Clear errors when closing
+      // errorMessage.value = null; // Error message is now cleared at the start of a new build
     },
   })
 
@@ -75,23 +92,21 @@ export function useMultiStepBuilding() {
       afterText: runId.value ? `Workflow (ID: ${runId.value}) triggered.` : 'Workflow triggered.',
     },
     {
-      text: 'Building Slides Website...',
+      text: 'Building Slides...', // Generic text for building
       async: loaderStates.isBuildingSlides,
       afterText: requestId.value ? `Slides (ID: ${requestId.value}) built.` : 'Slides built.',
     },
     {
-      text: 'Redirecting...',
+      text: 'Finalizing...', // Changed from 'Redirecting...'
       duration: 1000,
       action: handleBuildingComplete,
     },
   ])
 
-  // Placeholder - can be implemented if specific state change reactions are needed
   function handleStateChange(state: number) {
     // console.log('Loading step state changed:', state)
   }
 
-  // Placeholder - can be implemented if specific actions on completion are needed
   function handleComplete() {
     // console.log('All loading steps completed')
   }
@@ -99,7 +114,12 @@ export function useMultiStepBuilding() {
   function handleBuildingComplete() {
     buildingState.close()
     if (requestId.value) {
-      slidesUrl.value = `https://talks.idealeap.cn/playground/${requestId.value}`
+      if (currentExportType.value === 'pptx') {
+        slidesUrl.value = `https://talks.idealeap.cn/playground/${requestId.value}/${requestId.value}.pptx`
+      }
+      else {
+        slidesUrl.value = `https://talks.idealeap.cn/playground/${requestId.value}`
+      }
     }
   }
 
@@ -114,17 +134,18 @@ export function useMultiStepBuilding() {
     }
     catch (error) {
       console.error(`Fetch API error (${errorContext || 'General API call'}):`, error)
-      throw error // Re-throw to be caught by the caller
+      throw error
     }
   }
 
-  async function triggerWorkflow(
-    name?: string,
-    mdc?: string,
-    user?: string,
-    aspectRatio?: AspectRatio,
-    colorSchema?: ColorSchema,
-  ): Promise<void> {
+  async function triggerWorkflow(options: BuildSlidesOptions): Promise<void> {
+    const { name, mdc, user, aspectRatio, colorSchema, type = 'web' } = options // Add type, default to 'web'
+    const workflowArgs: WorkflowInputArgs = {}
+    if (aspectRatio)
+      workflowArgs.aspectRatio = aspectRatio
+    if (colorSchema)
+      workflowArgs.colorSchema = colorSchema
+
     const payload: TriggerWorkflowPayload = {
       ref: 'main',
       inputs: {
@@ -132,7 +153,8 @@ export function useMultiStepBuilding() {
         version: user,
         content: mdc,
         title: name,
-        args: encode(JSON.stringify({ aspectRatio, colorSchema })),
+        args: encode(JSON.stringify(workflowArgs)),
+        type, // Include type in inputs
       },
     }
 
@@ -153,7 +175,7 @@ export function useMultiStepBuilding() {
     }
     catch (error) {
       errorMessage.value = error instanceof Error ? error.message : 'Failed to trigger workflow.'
-      throw error // Propagate error to stop the building process
+      throw error
     }
   }
 
@@ -172,10 +194,14 @@ export function useMultiStepBuilding() {
         const status = data?.status
 
         if (status === WORKFLOW_STATUS_COMPLETED) {
+          if (data?.conclusion === 'failure') {
+            errorMessage.value = `Workflow failed. Run ID: ${currentRunId}`
+            throw new Error(`Workflow failed. Run ID: ${currentRunId}`)
+          }
           loaderStates.isBuildingSlides = false
           return // Successfully completed
         }
-        else if (
+        if (
           status === WORKFLOW_STATUS_FAILED
           || status === WORKFLOW_STATUS_CANCELLED
           || status === WORKFLOW_STATUS_TIMED_OUT
@@ -185,14 +211,11 @@ export function useMultiStepBuilding() {
         // Otherwise, status is pending or unknown, continue polling
       }
       catch (error) {
-        // If a specific workflow failure status was thrown, propagate it
         if (error instanceof Error && (error.message.includes(WORKFLOW_STATUS_FAILED) || error.message.includes(WORKFLOW_STATUS_CANCELLED) || error.message.includes(WORKFLOW_STATUS_TIMED_OUT))) {
           errorMessage.value = error.message
           throw error
         }
-        // For other errors (e.g., network issues during polling), log and continue polling up to MAX_ATTEMPTS
         console.warn(`Workflow status check attempt ${attempts + 1} failed:`, error)
-        // Do not set errorMessage.value here for transient polling errors, only for terminal workflow states.
       }
 
       await new Promise(resolve => setTimeout(resolve, interval))
@@ -205,46 +228,39 @@ export function useMultiStepBuilding() {
     throw new Error(timeoutMessage)
   }
 
-  async function startSlidesBuilding(
-    name?: string,
-    mdc?: string,
-    user?: string,
-    aspectRatio?: AspectRatio,
-    colorSchema?: ColorSchema,
-  ): Promise<void> {
-    // Reset states
-    buildingState.showSteps = true
-    loaderStates.isTriggeringWorkflow = true
-    loaderStates.isBuildingSlides = true
+  async function startSlidesBuilding(options: BuildSlidesOptions): Promise<void> {
     requestId.value = ''
     runId.value = ''
     slidesUrl.value = ''
-    errorMessage.value = null
+    errorMessage.value = null // Clear previous errors at the start of a new build
+    currentExportType.value = options.type || 'web' // Store the export type
+
+    buildingState.showSteps = true
+
+    loaderStates.isTriggeringWorkflow = true
+    loaderStates.isBuildingSlides = true
 
     try {
-      // Trigger workflow
-      await triggerWorkflow(name, mdc, user, aspectRatio, colorSchema)
-      loaderStates.isTriggeringWorkflow = false
+      await triggerWorkflow(options)
+      loaderStates.isTriggeringWorkflow = false // Triggering successful
 
-      // Build slides by checking workflow status
       if (runId.value) {
         await checkWorkflowStatus(runId.value)
+        loaderStates.isBuildingSlides = false // Building successful
       }
       else {
-        // This case should ideally not be reached if triggerWorkflow throws on failure
-        throw new Error('Cannot check workflow status: Run ID is not available.')
+        throw new Error('Workflow triggered, but Run ID is not available. Cannot check status.')
       }
-      loaderStates.isBuildingSlides = false
     }
     catch (error) {
-      // Error message is already set by triggerWorkflow or checkWorkflowStatus
-      // or set a generic one if not already set.
+      loaderStates.isTriggeringWorkflow = false
+      loaderStates.isBuildingSlides = false
+
       if (!errorMessage.value) {
         errorMessage.value = error instanceof Error ? error.message : 'An unexpected error occurred during the build process.'
       }
       console.error('Slides building process failed:', error)
-      buildingState.close() // Close the loader on error
-      // Re-throw so the caller (e.g., Vue component) can also handle it if needed
+      buildingState.close() // Hide the loader UI
       throw error
     }
   }
@@ -255,9 +271,9 @@ export function useMultiStepBuilding() {
     loadingSteps,
     handleStateChange,
     handleComplete,
-    // handleBuildingComplete, // Not typically called directly from outside
     startSlidesBuilding,
     slidesUrl,
-    errorMessage, // Expose error message to the UI
+    errorMessage,
+    currentExportType, // Ensure currentExportType is returned
   }
 }

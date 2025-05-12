@@ -47,6 +47,7 @@ export type Distribution =
   | 'bottom-right'
   | 'center'
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const formatter = computed(() => (props.currentSlideRoute?.meta?.slide as any)?.frontmatter || {})
 const distribution = computed(() => (formatter.value.glow || 'full') as Distribution)
 const opacity = computed<number>(() => +(formatter.value.glowOpacity || 0.4))
@@ -118,9 +119,9 @@ function usePloy(number = 16) {
     function randomBetween([a, b]: Range) {
       return rng() * (b - a) + a
     }
-    function applyOverflow(random: number, overflow: number) {
-      random = random * (1 + overflow * 2) - overflow
-      return rng() < disturbChance ? random + (rng() - 0.5) * disturb : random
+    function applyOverflow(initialRandom: number, overflowValue: number) {
+      const newRandom = initialRandom * (1 + overflowValue * 2) - overflowValue
+      return rng() < disturbChance ? newRandom + (rng() - 0.5) * disturb : newRandom
     }
     return Array.from({ length: number })
       .fill(0)

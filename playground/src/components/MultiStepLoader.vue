@@ -29,6 +29,7 @@ const emit = defineEmits<{
 const currentState = ref(0)
 const stepStartTime = ref(Date.now())
 const isLastStepComplete = ref(false)
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 let currentTimer: any = null
 
 async function executeStepAction(step: Step) {
