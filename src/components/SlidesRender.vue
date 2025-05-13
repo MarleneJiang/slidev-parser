@@ -97,14 +97,20 @@ const slideStates = ref<SlideState[]>([])
 async function updateSlide(index: number, slide: SlideSource) {
   try {
     slideStates.value[index].status = SlideStatus.Loading
+    // biome-ignore lint/style/noNonNullAssertion: <explanation>
     const renderedSlide = (await slideRenderer.value!.render([slide]))[0] // 渲染该Slide
     // 修改：使用 markRaw 包裹渲染结果以避免响应式开销
     slideStates.value[index].renderData = markRaw(renderedSlide)
     const css = await renderedSlide.css()
-    if (css?.output?.css) {
-      const styleId = `${props.id}-css-${index}` // 为每个Slide生成唯一的 styleId
+    const outputCss = css?.output?.getLayer()
+    if (outputCss) {
+      const slideId = `${props.id}-${index}`
+      const styleId = `${props.id}-css-${index}`
+
+      // 添加命名空间处理
+      const namespacedCss = cssNesting(outputCss, slideId)
       slideStates.value[index].styleId = styleId
-      updateDynamicCss(css.output.css, styleId) // 更新该Slide对应的 CSS
+      updateDynamicCss(namespacedCss, styleId) // 更新该Slide对应的 CSS
     }
 
     slideStates.value[index].status = SlideStatus.Loaded
@@ -113,6 +119,10 @@ async function updateSlide(index: number, slide: SlideSource) {
     console.error(`更新第 ${index} 个Slides时出错:`, error)
     slideStates.value[index].status = SlideStatus.Error
   }
+}
+
+function cssNesting(css: string, namespace: string) {
+  return (`\#${namespace} \{\n${css}\}`)
 }
 
 // 对比新旧 slides，只更新发生变化的Slides

@@ -1,5 +1,5 @@
 // 更新动态CSS
-export function updateDynamicCss(css: string, styleId: string = 'dynamic-style') {
+export function updateDynamicCss(css: string, styleId = 'dynamic-style') {
   try {
     let styleElement = document.getElementById(styleId) as HTMLStyleElement | null
     if (!styleElement) {
@@ -14,7 +14,7 @@ export function updateDynamicCss(css: string, styleId: string = 'dynamic-style')
     console.error('更新动态CSS时出错:', error)
   }
 }
-export function removeCss(styleId: string = 'dynamic-style') {
+export function removeCss(styleId = 'dynamic-style') {
   const styleElement = document.getElementById(styleId)
   if (styleElement) {
     styleElement.remove()

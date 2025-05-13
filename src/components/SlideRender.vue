@@ -100,8 +100,10 @@ async function updateSlide(slide: SlideSource) {
     }
     renderedComp.value = renderedSlide
     const css = await renderedSlide.css()
-    if (css?.output?.css) {
-      updateDynamicCss(css.output.css, `${props.id}-css`)
+    const outputCss = css?.output?.getLayer()
+    if (outputCss) {
+      const styleId = `${props.id}-css`
+      updateDynamicCss(cssNesting(outputCss, styleId), styleId)
     }
     status.value = SlideStatus.Loaded
   }
@@ -109,6 +111,10 @@ async function updateSlide(slide: SlideSource) {
     console.error('更新幻灯片时出错:', error)
     status.value = SlideStatus.Error
   }
+}
+
+function cssNesting(css: string, namespace: string) {
+  return (`\#${namespace} \{\n${css}\}`)
 }
 
 function handleUpdateSlide() {

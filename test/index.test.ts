@@ -68,17 +68,25 @@ describe('vue sfc generate', async () => {
   it('exported', () => {
     expect(output).toEqual(`<template>
 <InjectedLayout v-bind="$frontmatter">
-<div class="p-4 bg-red rounded">
-<h1 class="text-xl text-blue">23423</h1>
-<remote url="http://127.0.0.1:7000/api/component/181212ac-342c-40b9-9da3-f8d14f708881">
-<template #title="">
-<p>Default slot text</p>
-</template>
-<template #desc="">
-<p>This will be rendered in</p>
-</template>
-</remote>
-</div>
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 p-8">
+    <div class="grid grid-cols-3 gap-6">
+      <div class="backdrop-blur-md bg-white/10 border border-white/20 rounded-lg p-6 hover:bg-white/20 transition-all duration-300">
+        <div class="flex items-center mb-4">
+          <i class="i-carbon-document text-white text-2xl mr-2"></i>
+          <h2 class="text-white text-xl font-semibold">技术文档的可视化</h2>
+        </div>
+        <p class="text-white/80">将复杂的技术文档转化为易于理解的图表和卡片。</p>
+      </div>
+      <div class="backdrop-blur-md bg-white/10 border border-white/20 rounded-lg p-6 hover:bg-white/20 transition-all duration-300">
+        <div class="flex items-center mb-4">
+          <i class="i-carbon-idea text-white text-2xl mr-2"></i>
+          <h2 class="text-white text-xl font-semibold">保持专业性</h2>
+        </div>
+        <p class="text-white/80">在简化内容的同时，确保专业术语和关键信息的准确性。</p>
+      </div>
+<pre><code>&lt;/div&gt;
+</code></pre>
+  </div>
 </InjectedLayout>
 </template>
 

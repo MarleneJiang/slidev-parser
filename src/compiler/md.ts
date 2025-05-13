@@ -28,10 +28,8 @@ export async function compileCss(options: CompileCssOptions) {
     const unocss = await generateUnoCss({ inputHtml: extractTemplateBody(vueSFC) })
     return unocss
   }
-  else {
-    const unocss = await unoGenerator.generate({ inputHtml: extractTemplateBody(vueSFC) })
-    return unocss
-  }
+  const unocss = await unoGenerator.generate({ inputHtml: extractTemplateBody(vueSFC) })
+  return unocss
 }
 
 function createlayoutWrapperTransform(slidesInfo: SlideInfo[], layouts: Record<string, any>) {

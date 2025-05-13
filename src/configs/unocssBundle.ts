@@ -31,6 +31,7 @@ export const defaultConfigRaw = `import {
   presetAttributify,
   presetIcons,
   presetUno,
+  presetWebFonts
 } from 'unocss'
 
 export default defineConfig({
@@ -47,6 +48,7 @@ export default defineConfig({
       scale: 1.2,
       cdn: 'https://esm.sh/',
     }),
+    presetWebFonts({ /* options */ })
   ],
 })
 `
