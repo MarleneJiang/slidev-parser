@@ -105,6 +105,7 @@ export class SlideRenderer {
           slidesInfo: currentSlidesInfo,
           filename: s.source.filepath,
           code: s.source.content,
+          frontmatter: s.source.frontmatter,
           mdOptions: this.options.mdOptions,
           sfcOptions: this.options.sfcOptions,
           components: this.customComponents,
@@ -137,6 +138,7 @@ export class SlideRenderer {
         component: this.getAsyncComponent(i, loader, this.SlideLoading, this.SlideError),
         css: async () => await compileCss({
           code: s.source.content,
+          frontmatter: s.frontmatter,
           unoGenerator: this.unoGenerator,
         }),
       } satisfies Islide

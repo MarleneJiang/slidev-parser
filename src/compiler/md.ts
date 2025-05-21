@@ -15,15 +15,15 @@ export const mdParser = new MarkdownIt({ quotes: '""\'\'', html: true, xhtmlOut:
 mdParser.use(MarkdownItFootnote)
 mdParser.use(MarkdownItMdc)
 
-export function parseMd(code: string) {
-  return `<template><div>${mdParser.render(code)}</div></template>
+export function parseMd(code: string, pureHTML = false) {
+  return `<template><div>${pureHTML ? code : mdParser.render(code)}</div></template>
 <script setup>
 </script>`
 }
 
 export async function compileCss(options: CompileCssOptions) {
-  const { code, unoGenerator } = options
-  const vueSFC = parseMd(code) // 转换成sfc代码，不包含style
+  const { code, unoGenerator, frontmatter } = options
+  const vueSFC = parseMd(code, !!frontmatter?.pureHTML) // 转换成sfc代码，不包含style
   if (!unoGenerator) {
     const unocss = await generateUnoCss({ inputHtml: extractTemplateBody(vueSFC) })
     return unocss
@@ -50,8 +50,8 @@ function createlayoutWrapperTransform(slidesInfo: SlideInfo[], layouts: Record<s
 }
 
 export async function compileVueSFC(options: CompileOptions) {
-  const { slidesInfo, code, filename, components, sfcComponents } = options
-  let vueSFC = parseMd(code) // 转换成sfc代码，不包含style
+  const { slidesInfo, code, filename, components, sfcComponents, frontmatter } = options
+  let vueSFC = parseMd(code, !!frontmatter?.pureHTML) // 转换成sfc代码，不包含style
   const layoutWrapperPlugin = createlayoutWrapperTransform(slidesInfo, layouts)
   vueSFC = layoutWrapperPlugin.transform!.call({} as any, vueSFC, filename) || vueSFC // 传入预制代码，载入布局
   // 处理自定义组件

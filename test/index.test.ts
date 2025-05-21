@@ -5,6 +5,7 @@ describe('slide compiler css', async () => {
   const slidesSource = [
     {
       frontmatter: {
+        pureHTML: false,
       },
       content: `# Hello\n\nThis is a slide{.mt-5}\n\nCompiled in the **browser**\n::card
   The content of the card{style="color: green;" .custom-class .green}!

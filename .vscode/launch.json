@@ -1,0 +1,12 @@
+{
+  "configurations": [
+    {
+      "type": "msedge",
+      "request": "launch",
+      "name": "Launch Edge (macOS)",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/src",
+      "runtimeExecutable": "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge"
+    }
+  ]
+}

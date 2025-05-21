@@ -9,7 +9,7 @@ export interface CompileResult {
   errors?: (string | Error)[]
 }
 export interface SlideSource {
-  frontmatter: Record<string, string>
+  frontmatter: Record<string, any>
   content: string
   note: string
 }
@@ -23,6 +23,7 @@ interface BaseConfigOptions {
 
 export interface CompileCssOptions {
   code: string
+  frontmatter?: Record<string, any>
   unoGenerator: UnoGenerator
 }
 
@@ -30,6 +31,7 @@ export interface CompileOptions extends BaseConfigOptions {
   slidesInfo: SlideInfo[]
   filename: string
   code: string
+  frontmatter?: Record<string, any>
   unoGenerator?: UnoGenerator
 }
 
