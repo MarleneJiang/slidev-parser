@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 import { Pane, Splitpanes } from 'splitpanes'
-import { ref } from 'vue'
-import { mode } from '../composables/url'
+import { onMounted, ref } from 'vue'
+import { isDark } from '../composables/dark'
+import { color, mode } from '../composables/url'
 import Editor from './Edit.vue'
 import HeaderBar from './HeaderBar.vue'
 import Preview from './Preview.vue'
@@ -15,6 +16,8 @@ const paneSize = ref(mode.value === 'preview' ? 0 : 50)
 const savedSize = ref(50)
 
 function toggleSize() {
+  if (mode.value === 'preview')
+    return
   if (paneSize.value > 0) {
     savedSize.value = paneSize.value
     paneSize.value = 0
@@ -27,6 +30,15 @@ function onResize($event) {
   isResizing.value = true
   paneSize.value = $event[0].size
 }
+
+onMounted(() => {
+  if (color.value === 'dark') {
+    isDark.value = true
+  }
+  else {
+    isDark.value = false
+  }
+})
 </script>
 
 <template>
@@ -37,7 +49,7 @@ function onResize($event) {
     @resize="onResize"
     @resized="isResizing = false"
   >
-    <Pane :size="paneSize">
+    <Pane v-if="mode !== 'preview'" :size="paneSize">
       <Editor border="r t main solid" />
     </Pane>
     <Pane flex="~ col" h-full :size="100 - paneSize">

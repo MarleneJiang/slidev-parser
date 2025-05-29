@@ -1,5 +1,6 @@
 import { useDark } from '@vueuse/core'
 import { nextTick } from 'vue'
+import { color } from './url'
 
 export const isDark = useDark()
 
@@ -13,6 +14,7 @@ const isAppearanceTransition = document.startViewTransition
 export function toggleDark(event?: MouseEvent) {
   if (!isAppearanceTransition || !event) {
     isDark.value = !isDark.value
+    color.value = isDark.value ? 'dark' : 'light'
     return
   }
   const x = event.clientX
@@ -23,6 +25,7 @@ export function toggleDark(event?: MouseEvent) {
   )
   const transition = document.startViewTransition(async () => {
     isDark.value = !isDark.value
+    color.value = isDark.value ? 'dark' : 'light'
     await nextTick()
   })
   transition.ready.then(() => {

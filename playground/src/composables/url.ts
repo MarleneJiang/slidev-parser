@@ -24,17 +24,19 @@ const params = new URLSearchParams(
 export const inputMDC = ref(decode(params.get('mdc') || '') || defaultMDC)
 export const options: Ref<RendererOptions> = ref(JSON.parse(decode(params.get('options') || '') || defaultOptions))
 export const mode = ref(params.get('mode') || 'editor')
+export const color = ref(params.get('color') || 'light')
 export function updateUrl() {
   const url = new URL('/', window.location.origin)
   const newParams = new URLSearchParams()
   newParams.set('mdc', encode(inputMDC.value))
   newParams.set('options', encode(JSON.stringify(options.value)))
   newParams.set('mode', mode.value)
+  newParams.set('color', color.value)
   window.history.replaceState('', '', `${url.pathname}#${newParams}`)
 }
 
 throttledWatch(
-  [inputMDC, options, mode],
+  [inputMDC, options, mode, color],
   () => updateUrl(),
   { throttle: 1000, deep: true },
 )
